@@ -589,7 +589,7 @@
   <h2>Tap to Awaken</h2>
   <p>This harmonium uses your device's gyroscope to control the bellows. Tilt or rock the device to pump air — just like a real harmonium.</p>
   <button class="big-btn" id="start-btn">Begin Playing</button>
-  <p style="font-size:.62rem;opacity:.4;">On iOS, permission is required to access motion sensors.</p>
+  <p style="font-size:.62rem;opacity:.4;">On iOS, a system permission prompt will appear. On Android, gyro activates automatically. On desktop, hold Space to pump.</p>
 </div>
 
 <script>
@@ -931,52 +931,57 @@ setInterval(() => {
 }, 40);
 
 /* ─── GYROSCOPE ─── */
+// iOS DeviceMotion: use rotationRate (deg/s) — much more responsive than
+// tracking absolute beta/gamma deltas which are noisy and lag-prone
 function handleDeviceMotion(e) {
   if (!useGyro) return;
-  const beta  = e.beta  || 0;  // front-back tilt
-  const gamma = e.gamma || 0;  // left-right tilt
 
-  // Update bubble position
-  const bx = Math.max(-1, Math.min(1, gamma / 40));
-  const by = Math.max(-1, Math.min(1, (beta - 45) / 40));
-  document.getElementById('gyro-bubble').style.transform =
-    `translate(calc(-50% + ${bx * 18}px), calc(-50% + ${by * 18}px))`;
-
-  document.getElementById('tilt-readout').textContent =
-    `tilt: ${beta.toFixed(1)}° | roll: ${gamma.toFixed(1)}°`;
-
-  if (lastBeta !== null) {
-    const db = Math.abs(beta  - lastBeta);
-    const dg = Math.abs(gamma - lastGamma);
-    const motion = db + dg * 0.5;
-    if (motion > 0.4) {
-      bellows = Math.min(1, bellows + motion * 0.015 * BELLOW_GYRO_SCALE);
+  // rotationRate gives instantaneous angular velocity in deg/s
+  const rr = e.rotationRate;
+  if (rr) {
+    const alpha = rr.alpha ?? 0;  // rotation around z
+    const betaR = rr.beta  ?? 0;  // rotation around x
+    const gamma = rr.gamma ?? 0;  // rotation around y
+    const speed = Math.abs(betaR) * 0.7 + Math.abs(gamma) * 0.5 + Math.abs(alpha) * 0.2;
+    if (speed > 5) {  // deg/s threshold — ignore tiny tremors
+      bellows = Math.min(1, bellows + (speed / 300) * BELLOW_GYRO_SCALE);
     }
   }
-  lastBeta  = beta;
-  lastGamma = gamma;
+
+  // Also track absolute orientation for the bubble visualiser
+  const beta  = e.beta  ?? 0;
+  const gamma = e.gamma ?? 0;
+  const bx = Math.max(-1, Math.min(1, gamma / 45));
+  const by = Math.max(-1, Math.min(1, (beta - 45) / 45));
+  document.getElementById('gyro-bubble').style.transform =
+    `translate(calc(-50% + ${bx * 18}px), calc(-50% + ${by * 18}px))`;
+  document.getElementById('tilt-readout').textContent =
+    `tilt: ${beta.toFixed(1)}°  roll: ${gamma.toFixed(1)}°`;
 }
 
-/* Alternative: deviceorientation (beta = forward tilt) */
 function handleOrientation(e) {
   if (!useGyro) return;
-  const beta  = e.beta  || 0;
-  const gamma = e.gamma || 0;
+  const beta  = e.beta  ?? 0;
+  const gamma = e.gamma ?? 0;
 
-  const bx = Math.max(-1, Math.min(1, gamma / 40));
-  const by = Math.max(-1, Math.min(1, (beta - 45) / 40));
+  // Update bubble visualiser
+  const bx = Math.max(-1, Math.min(1, gamma / 45));
+  const by = Math.max(-1, Math.min(1, (beta - 45) / 45));
   document.getElementById('gyro-bubble').style.transform =
     `translate(calc(-50% + ${bx * 18}px), calc(-50% + ${by * 18}px))`;
 
   document.getElementById('tilt-readout').textContent =
-    `tilt: ${beta.toFixed(1)}° | roll: ${gamma.toFixed(1)}°`;
+    `tilt: ${beta.toFixed(1)}°  roll: ${gamma.toFixed(1)}°`;
 
   if (lastBeta !== null) {
     const db = Math.abs(beta  - lastBeta);
     const dg = Math.abs(gamma - lastGamma);
-    const motion = db * 0.8 + dg * 0.4;
-    if (motion > 0.3) {
-      bellows = Math.min(1, bellows + motion * 0.012 * BELLOW_GYRO_SCALE);
+    // Reject impossibly large jumps (device waking up, tab switch)
+    if (db < 30 && dg < 30) {
+      const motion = db * 0.9 + dg * 0.5;
+      if (motion > 0.2) {
+        bellows = Math.min(1, bellows + motion * 0.02 * BELLOW_GYRO_SCALE);
+      }
     }
   }
   lastBeta  = beta;
@@ -984,19 +989,75 @@ function handleOrientation(e) {
 }
 
 async function requestGyro() {
+  // ── iOS 13+ : DeviceMotionEvent.requestPermission() must be called
+  //              from a user gesture (already inside button click ✓)
   if (typeof DeviceMotionEvent !== 'undefined' &&
       typeof DeviceMotionEvent.requestPermission === 'function') {
     try {
       const perm = await DeviceMotionEvent.requestPermission();
       if (perm === 'granted') {
-        window.addEventListener('devicemotion', handleDeviceMotion);
-        useGyro = true; gyroGranted = true;
+        window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
+        useGyro = true;
+        document.getElementById('tilt-readout').textContent = 'iOS motion: active';
+      } else {
+        document.getElementById('tilt-readout').textContent = 'Motion permission denied — use Space';
       }
-    } catch(e) { console.warn('Motion permission denied', e); }
-  } else if (typeof DeviceOrientationEvent !== 'undefined') {
-    window.addEventListener('deviceorientation', handleOrientation);
-    useGyro = true; gyroGranted = true;
+      return;
+    } catch(e) {
+      console.warn('iOS motion permission error', e);
+      document.getElementById('tilt-readout').textContent = 'Motion error — use Space';
+      return;
+    }
   }
+
+  // ── Android Chrome 88+ : DeviceOrientationEvent.requestPermission() may exist
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try {
+      const perm = await DeviceOrientationEvent.requestPermission();
+      if (perm === 'granted') {
+        window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+        useGyro = true;
+        document.getElementById('tilt-readout').textContent = 'Gyro: active';
+      } else {
+        document.getElementById('tilt-readout').textContent = 'Orientation denied — use Space';
+      }
+      return;
+    } catch(e) {
+      console.warn('Android orientation permission error', e);
+    }
+  }
+
+  // ── Other Android / non-iOS : no permission API, just attach and verify
+  //    we get real values (desktop fires the event too but with null values)
+  if (typeof DeviceOrientationEvent !== 'undefined') {
+    let verified = false;
+
+    const verify = (e) => {
+      // Real gyro sends non-null beta/gamma; desktop sends nulls or fixed zeros
+      if (e.beta !== null && e.gamma !== null &&
+          (Math.abs(e.beta) > 0.01 || Math.abs(e.gamma) > 0.01)) {
+        verified = true;
+        useGyro  = true;
+        document.getElementById('tilt-readout').textContent = 'Gyro: active';
+      }
+    };
+
+    window.addEventListener('deviceorientation', verify,       { passive: true, once: true });
+    window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+
+    // After 1.5 s with no real values, tell user to use keyboard/space
+    setTimeout(() => {
+      if (!verified) {
+        document.getElementById('tilt-readout').textContent = 'No gyro detected — use Space / keyboard';
+      }
+    }, 1500);
+
+    return;
+  }
+
+  // ── Fallback: no sensor API at all (desktop) ──
+  document.getElementById('tilt-readout').textContent = 'No gyro — use Space / keyboard';
 }
 
 /* ─── KEYBOARD BUILDER ─── */
