@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1a0d06" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Harmonium" />
+  <title>Harmonium</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:       #1a0d06;
+      --wood:     #3d1f0f;
+      --wood2:    #5c3118;
+      --ivory:    #f5edd8;
+      --ebony:    #1c0f07;
+      --gold:     #c89a46;
+      --gold2:    #e8b85a;
+      --red:      #8b2a1a;
+      --felt:     #2d4a2a;
+      --bellows-fill: #c89a46;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--ivory);
+      font-family: 'Cormorant Garamond', serif;
+      overscroll-behavior: none;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Wood grain background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        repeating-linear-gradient(
+          88deg,
+          transparent 0px, transparent 18px,
+          rgba(0,0,0,.08) 18px, rgba(0,0,0,.08) 19px
+        ),
+        repeating-linear-gradient(
+          92deg,
+          transparent 0px, transparent 40px,
+          rgba(255,255,255,.02) 40px, rgba(255,255,255,.02) 41px
+        ),
+        linear-gradient(180deg, #2a1208 0%, #1a0d06 40%, #0f0804 100%);
+      pointer-events: none;
+    }
+
+    #app {
+      position: relative; z-index: 1;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 8px) env(safe-area-inset-bottom, 10px) env(safe-area-inset-left, 8px);
+      gap: 0;
+    }
+
+    /* ─── TOP HEADER ─── */
+    #header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px 0;
+    }
+
+    #title-block { text-align: left; }
+    #title-block h1 {
+      font-family: 'IM Fell English', serif;
+      font-size: clamp(1.1rem, 4vw, 1.6rem);
+      letter-spacing: .04em;
+      color: var(--gold2);
+      line-height: 1;
+    }
+    #title-block p {
+      font-size: clamp(0.55rem, 2vw, 0.7rem);
+      color: rgba(245,237,216,.4);
+      font-style: italic;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    #status-badge {
+      font-size: clamp(0.55rem, 1.8vw, 0.68rem);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border: 1px solid rgba(200,154,70,.35);
+      border-radius: 20px;
+      color: rgba(200,154,70,.7);
+      background: rgba(200,154,70,.06);
+      transition: all .4s;
+    }
+    #status-badge.active {
+      color: var(--gold2);
+      border-color: var(--gold2);
+      background: rgba(232,184,90,.12);
+      box-shadow: 0 0 12px rgba(232,184,90,.2);
+    }
+
+    /* ─── BELLOW SECTION ─── */
+    #bellow-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 16px;
+    }
+
+    #bellow-label {
+      font-size: clamp(0.55rem, 1.8vw, 0.65rem);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: rgba(245,237,216,.3);
+    }
+
+    #bellows-track {
+      width: min(460px, 94vw);
+      height: 28px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Decorative bellows folds in background */
+    #bellows-track::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 4px;
+      border: 1px solid rgba(200,154,70,.25);
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(0,0,0,.25) 0px, rgba(0,0,0,.25) 3px,
+          rgba(255,255,255,.03) 3px, rgba(255,255,255,.03) 14px
+        );
+    }
+
+    #bellows-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #8b4a1a, var(--gold), var(--gold2));
+      transition: width 0.04s linear;
+      position: relative; z-index: 1;
+      box-shadow: 0 0 8px rgba(200,154,70,.4);
+    }
+
+    #tilt-readout {
+      font-size: clamp(0.6rem, 2vw, 0.72rem);
+      color: rgba(200,154,70,.5);
+      letter-spacing: .05em;
+    }
+
+    /* ─── GYRO VISUAL ─── */
+    #gyro-vis {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(200,154,70,.3);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    #gyro-bubble {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, var(--gold2), var(--gold));
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      transition: transform .1s ease-out;
+      box-shadow: 0 0 8px rgba(200,154,70,.6);
+    }
+
+    /* ─── BELLOW ROW ─── */
+    #bellow-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      width: 100%;
+      padding: 0 16px;
+    }
+
+    /* ─── OCTAVE SELECTOR ─── */
+    #octave-strip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: clamp(0.6rem, 1.8vw, 0.7rem);
+      letter-spacing: .1em;
+      color: rgba(245,237,216,.5);
+    }
+    #octave-strip span { text-transform: uppercase; }
+    .oct-btn {
+      background: rgba(200,154,70,.1);
+      border: 1px solid rgba(200,154,70,.3);
+      color: var(--ivory);
+      border-radius: 4px;
+      width: 26px; height: 26px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: .9rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: manipulation;
+      transition: background .15s;
+    }
+    .oct-btn:active { background: rgba(200,154,70,.3); }
+    #octave-val {
+      min-width: 20px;
+      text-align: center;
+      color: var(--gold2);
+      font-size: .85rem;
+    }
+
+    /* ─── KEYBOARD ─── */
+    #keyboard-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    #scale-label {
+      font-size: clamp(0.55rem, 1.8vw, 0.65rem);
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(245,237,216,.3);
+      font-style: italic;
+    }
+
+    /* ─── PIANO KEYS ─── */
+    #piano {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 0;
+      padding: 0 8px;
+      height: clamp(120px, 32vw, 200px);
+      position: relative;
+    }
+
+    .key-white {
+      background: linear-gradient(180deg, #f0e8d0 0%, #f8f2e4 50%, #ede3c8 100%);
+      border: 1px solid #9a8060;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      width: clamp(40px, 9vw, 62px);
+      height: 100%;
+      margin: 0 1px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 8px;
+      cursor: pointer;
+      position: relative;
+      touch-action: none;
+      transition: background .06s, box-shadow .06s;
+      box-shadow: 2px 4px 8px rgba(0,0,0,.5), inset 0 -2px 4px rgba(0,0,0,.15);
+    }
+
+    .key-white:active,
+    .key-white.pressed {
+      background: linear-gradient(180deg, #d4a843 0%, #e8c06a 60%, #c89a3a 100%);
+      box-shadow: 1px 2px 4px rgba(0,0,0,.5), inset 0 3px 6px rgba(0,0,0,.25);
+      transform: scaleY(0.985);
+      transform-origin: top;
+    }
+
+    .key-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.55rem, 1.6vw, 0.72rem);
+      font-weight: 600;
+      color: #4a3020;
+      letter-spacing: .04em;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .key-label .kb {
+      display: block;
+      font-size: clamp(0.45rem, 1.2vw, 0.58rem);
+      color: rgba(74,48,32,.5);
+      font-style: italic;
+      margin-top: 2px;
+    }
+
+    .key-black {
+      background: linear-gradient(180deg, #1c0f07 0%, #2a1610 60%, #1a0c06 100%);
+      border: 1px solid #5a3018;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      width: clamp(28px, 6vw, 42px);
+      height: 62%;
+      margin: 0 -1px;
+      z-index: 2;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 6px;
+      cursor: pointer;
+      position: relative;
+      touch-action: none;
+      transition: background .06s, box-shadow .06s;
+      box-shadow: 2px 6px 10px rgba(0,0,0,.7), inset 0 -2px 3px rgba(0,0,0,.3);
+    }
+
+    .key-black:active,
+    .key-black.pressed {
+      background: linear-gradient(180deg, #4a2810 0%, #6a3c1a 60%, #3a1e08 100%);
+      box-shadow: 1px 3px 5px rgba(0,0,0,.7), inset 0 3px 5px rgba(0,0,0,.4);
+      transform: scaleY(0.97);
+      transform-origin: top;
+    }
+
+    .key-black .key-label { color: rgba(245,237,216,.55); }
+    .key-black .key-label .kb { color: rgba(245,237,216,.25); }
+
+    /* Pentatonic highlight dot */
+    .key-white.pentatonic::after,
+    .key-black.pentatonic::after {
+      content: '';
+      position: absolute;
+      top: 7px; left: 50%;
+      transform: translateX(-50%);
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: 0.5;
+    }
+
+    /* ─── MODE SELECTOR ─── */
+    #mode-bar {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      padding: 0 8px 4px;
+    }
+
+    .mode-btn {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.6rem, 1.8vw, 0.72rem);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 3px;
+      border: 1px solid rgba(200,154,70,.25);
+      background: transparent;
+      color: rgba(245,237,216,.4);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all .2s;
+    }
+    .mode-btn.active {
+      border-color: var(--gold);
+      background: rgba(200,154,70,.15);
+      color: var(--gold2);
+    }
+
+    /* ─── GYRO PERMISSION OVERLAY ─── */
+    #gyro-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(26,13,6,.92);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px;
+      backdrop-filter: blur(8px);
+      padding: 32px;
+    }
+    #gyro-overlay.hidden { display: none; }
+
+    #gyro-overlay h2 {
+      font-family: 'IM Fell English', serif;
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
+      color: var(--gold2);
+      text-align: center;
+    }
+    #gyro-overlay p {
+      font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+      color: rgba(245,237,216,.6);
+      text-align: center;
+      max-width: 320px;
+      line-height: 1.6;
+    }
+
+    .big-btn {
+      font-family: 'IM Fell English', serif;
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      letter-spacing: .1em;
+      padding: 12px 32px;
+      border-radius: 5px;
+      border: 1.5px solid var(--gold);
+      background: rgba(200,154,70,.12);
+      color: var(--gold2);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all .25s;
+    }
+    .big-btn:hover, .big-btn:active {
+      background: rgba(200,154,70,.28);
+      box-shadow: 0 0 20px rgba(200,154,70,.25);
+    }
+
+    #bellow-manual-btn {
+      position: relative;
+      width: min(200px, 44vw);
+      height: 52px;
+      border-radius: 6px;
+      border: 1.5px solid rgba(200,154,70,.4);
+      background: rgba(200,154,70,.06);
+      color: var(--gold2);
+      font-family: 'IM Fell English', serif;
+      font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+      letter-spacing: .06em;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all .15s;
+      overflow: hidden;
+      display: none; /* show on desktop */
+    }
+    #bellow-manual-btn::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(200,154,70,.12), transparent);
+      transform: translateX(-100%);
+      transition: transform .4s;
+    }
+    #bellow-manual-btn:active::before { transform: translateX(100%); }
+    #bellow-manual-btn:active {
+      background: rgba(200,154,70,.18);
+      box-shadow: 0 0 16px rgba(200,154,70,.3);
+    }
+
+    /* ─── DECORATIVE FRAME ─── */
+    #frame-top, #frame-bottom {
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold2), var(--gold), transparent);
+      opacity: .35;
+      flex-shrink: 0;
+    }
+
+    /* ─── FLOATING PARTICLE REEDS ─── */
+    @keyframes reed-glow {
+      0%, 100% { opacity: 0; transform: translateY(0); }
+      50% { opacity: .6; }
+      100% { opacity: 0; transform: translateY(-30px); }
+    }
+    .reed-particle {
+      position: fixed;
+      width: 2px; height: 8px;
+      background: var(--gold);
+      border-radius: 1px;
+      pointer-events: none;
+      animation: reed-glow 1.2s ease-out forwards;
+      z-index: 0;
+    }
+
+    /* ─── RESPONSIVE LANDSCAPE ─── */
+    @media (orientation: landscape) and (max-height: 500px) {
+      #bellow-section { flex-direction: row; gap: 10px; align-items: center; }
+      #bellows-track { width: 200px; }
+      #tilt-readout { display: none; }
+      #gyro-vis { width: 44px; height: 44px; }
+    }
+
+    /* ─── DESKTOP HINT ─── */
+    @media (pointer: fine) {
+      #bellow-manual-btn { display: flex; align-items: center; justify-content: center; }
+      #gyro-hint { display: none; }
+    }
+
+    #gyro-hint {
+      font-size: clamp(0.55rem, 1.6vw, 0.65rem);
+      letter-spacing: .1em;
+      color: rgba(245,237,216,.3);
+      font-style: italic;
+    }
+
+    /* Scale selection row */
+    #scale-row {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 0 8px;
+    }
+    .scale-btn {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.55rem, 1.6vw, 0.68rem);
+      letter-spacing: .07em;
+      padding: 4px 9px;
+      border-radius: 3px;
+      border: 1px solid rgba(200,154,70,.2);
+      background: transparent;
+      color: rgba(245,237,216,.35);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all .2s;
+    }
+    .scale-btn.active {
+      border-color: rgba(200,154,70,.6);
+      background: rgba(200,154,70,.1);
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="frame-top"></div>
+
+  <!-- HEADER -->
+  <div id="header">
+    <div id="title-block">
+      <h1>Harmonium</h1>
+      <p>Gyroscope Bellows</p>
+    </div>
+    <div id="status-badge">Tap to begin</div>
+  </div>
+
+  <!-- BELLOWS -->
+  <div id="bellow-section">
+    <div id="bellow-row">
+      <div id="gyro-vis"><div id="gyro-bubble"></div></div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:5px; align-items:center;">
+        <div id="bellow-label">Bellows Pressure</div>
+        <div id="bellows-track"><div id="bellows-fill"></div></div>
+        <div id="tilt-readout">tilt: — ° &nbsp;|&nbsp; roll: — °</div>
+      </div>
+      <button id="bellow-manual-btn" title="Hold Space to pump bellows">PUMP<br><small style="font-size:.65em;font-family:'Cormorant Garamond',serif;opacity:.6">hold space</small></button>
+    </div>
+    <div id="gyro-hint">Tilt or rock device to pump bellows</div>
+  </div>
+
+  <!-- SCALE + OCTAVE -->
+  <div style="width:100%;display:flex;flex-direction:column;gap:5px;align-items:center;">
+    <div id="scale-row">
+      <button class="scale-btn active" data-scale="pentatonic">Pentatonic</button>
+      <button class="scale-btn" data-scale="full">Full Chromatic</button>
+      <button class="scale-btn" data-scale="bhairav">Bhairav</button>
+      <button class="scale-btn" data-scale="yaman">Yaman</button>
+    </div>
+    <div id="octave-strip">
+      <span>Oct</span>
+      <button class="oct-btn" id="oct-dn">−</button>
+      <span id="octave-val">4</span>
+      <button class="oct-btn" id="oct-up">+</button>
+    </div>
+  </div>
+
+  <!-- PIANO -->
+  <div id="keyboard-wrapper">
+    <div id="scale-label">Pentatonic Scale — C Major</div>
+    <div id="piano"><!-- generated by JS --></div>
+  </div>
+
+  <!-- MODE BAR -->
+  <div id="mode-bar">
+    <button class="mode-btn active" data-mode="sustain">Sustain</button>
+    <button class="mode-btn" data-mode="staccato">Staccato</button>
+    <button class="mode-btn" data-mode="drone">Drone</button>
+  </div>
+
+  <div id="frame-bottom"></div>
+</div>
+
+<!-- PERMISSION OVERLAY -->
+<div id="gyro-overlay">
+  <h2>Tap to Awaken</h2>
+  <p>This harmonium uses your device's gyroscope to control the bellows. Tilt or rock the device to pump air — just like a real harmonium.</p>
+  <button class="big-btn" id="start-btn">Begin Playing</button>
+  <p style="font-size:.62rem;opacity:.4;">On iOS, permission is required to access motion sensors.</p>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   iHARMONIUM — Gyroscope PWA
+   Remixed from gajraj-m/iharmonium
+   ═══════════════════════════════════════════════════════ */
+
+const SCALES = {
+  pentatonic: {
+    name: 'Pentatonic — C Major',
+    // C D E G A C D E G A
+    keys: [
+      { note:'C',  type:'white', kb:'A', semitone:0  },
+      { note:'D',  type:'white', kb:'S', semitone:2  },
+      { note:'E',  type:'white', kb:'D', semitone:4  },
+      { note:'G',  type:'white', kb:'F', semitone:7  },
+      { note:'A',  type:'white', kb:'G', semitone:9  },
+      { note:'C',  type:'white', kb:'H', semitone:12 },
+      { note:'D',  type:'white', kb:'J', semitone:14 },
+      { note:'E',  type:'white', kb:'K', semitone:16 },
+      { note:'G',  type:'white', kb:'L', semitone:19 },
+      { note:'A',  type:'white', kb:';', semitone:21 },
+    ],
+    pentatonicIndices: [0,1,2,3,4,5,6,7,8,9],
+  },
+  full: {
+    name: 'Chromatic — C Major',
+    keys: [
+      { note:'C',  type:'white', kb:'A',  semitone:0  },
+      { note:'C#', type:'black', kb:'W',  semitone:1  },
+      { note:'D',  type:'white', kb:'S',  semitone:2  },
+      { note:'D#', type:'black', kb:'E',  semitone:3  },
+      { note:'E',  type:'white', kb:'D',  semitone:4  },
+      { note:'F',  type:'white', kb:'F',  semitone:5  },
+      { note:'F#', type:'black', kb:'T',  semitone:6  },
+      { note:'G',  type:'white', kb:'G',  semitone:7  },
+      { note:'G#', type:'black', kb:'Y',  semitone:8  },
+      { note:'A',  type:'white', kb:'H',  semitone:9  },
+      { note:'A#', type:'black', kb:'U',  semitone:10 },
+      { note:'B',  type:'white', kb:'J',  semitone:11 },
+      { note:'C',  type:'white', kb:'K',  semitone:12 },
+    ],
+    pentatonicIndices: [0,2,4,6,9,11,12],
+  },
+  bhairav: {
+    name: 'Bhairav — Dawn Raga',
+    keys: [
+      { note:'S',   type:'white', kb:'A', semitone:0  },
+      { note:'re',  type:'black', kb:'W', semitone:1  },
+      { note:'G',   type:'white', kb:'S', semitone:4  },
+      { note:'M',   type:'white', kb:'D', semitone:5  },
+      { note:'P',   type:'white', kb:'F', semitone:7  },
+      { note:'dh',  type:'black', kb:'T', semitone:8  },
+      { note:'N',   type:'white', kb:'G', semitone:11 },
+      { note:'S̈',   type:'white', kb:'H', semitone:12 },
+    ],
+    pentatonicIndices: [0,1,2,3,4,5,6,7],
+  },
+  yaman: {
+    name: 'Yaman — Evening Raga',
+    keys: [
+      { note:'S',  type:'white', kb:'A', semitone:0  },
+      { note:'R',  type:'white', kb:'S', semitone:2  },
+      { note:'G',  type:'white', kb:'D', semitone:4  },
+      { note:'M#', type:'black', kb:'T', semitone:6  },
+      { note:'P',  type:'white', kb:'F', semitone:7  },
+      { note:'D',  type:'white', kb:'G', semitone:9  },
+      { note:'N',  type:'white', kb:'H', semitone:11 },
+      { note:'S̈',  type:'white', kb:'J', semitone:12 },
+    ],
+    pentatonicIndices: [0,1,2,3,4,5,6,7],
+  },
+};
+
+/* ─── STATE ─── */
+let audioCtx = null, masterGain = null;
+let bellows = 0, lastBeta = null, lastGamma = null;
+let activeOscs = {};
+let octave = 4;
+let currentScale = 'pentatonic';
+let playMode = 'sustain';
+let gyroGranted = false;
+let useGyro = false;
+let bellowsPumpActive = false; // for space bar / manual btn
+
+/* ─── BASE FREQUENCIES ─── */
+const A4 = 440;
+function midiToFreq(midi) { return A4 * Math.pow(2, (midi - 69) / 12); }
+function noteFreq(semitone, oct) {
+  // C4 = midi 60
+  return midiToFreq(60 + semitone + (oct - 4) * 12);
+}
+
+/* ─── AUDIO INIT ─── */
+function initAudio() {
+  if (audioCtx) { if (audioCtx.state === 'suspended') audioCtx.resume(); return; }
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0;
+  // Slight reverb-like effect via convolver would be ideal; use gain for now
+  masterGain.connect(audioCtx.destination);
+}
+
+/* ─── HARMONIUM SOUND ─── */
+function startNote(semitone) {
+  if (!audioCtx) return;
+  const key = `s${semitone}`;
+  if (activeOscs[key]) return;
+
+  const freq = noteFreq(semitone, octave);
+
+  // Three oscillators for reed-like timbre
+  const oscs = [];
+  const gains = [];
+
+  const partials = [
+    { type:'sawtooth', detune:0,    vol:0.40 },
+    { type:'square',   detune:+1.2, vol:0.22 },
+    { type:'sawtooth', detune:-0.8, vol:0.18 },
+  ];
+
+  partials.forEach(p => {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = p.type;
+    o.frequency.value = freq;
+    o.detune.value = p.detune * 10;
+    g.gain.value = p.vol;
+
+    // Attack envelope
+    g.gain.setValueAtTime(0, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(p.vol, audioCtx.currentTime + 0.04);
+
+    o.connect(g);
+    g.connect(masterGain);
+    o.start();
+    oscs.push(o); gains.push(g);
+  });
+
+  activeOscs[key] = { oscs, gains, semitone };
+
+  // Visual
+  const el = document.querySelector(`[data-semitone="${semitone}"]`);
+  if (el) el.classList.add('pressed');
+
+  if (playMode === 'staccato') {
+    setTimeout(() => stopNote(semitone), 180);
+  }
+}
+
+function stopNote(semitone) {
+  const key = `s${semitone}`;
+  if (!activeOscs[key]) return;
+  const { oscs, gains } = activeOscs[key];
+  const t = audioCtx.currentTime;
+  gains.forEach(g => {
+    g.gain.cancelScheduledValues(t);
+    g.gain.setValueAtTime(g.gain.value, t);
+    g.gain.linearRampToValueAtTime(0, t + 0.15);
+  });
+  oscs.forEach(o => o.stop(t + 0.18));
+  delete activeOscs[key];
+
+  const el = document.querySelector(`[data-semitone="${semitone}"]`);
+  if (el) el.classList.remove('pressed');
+}
+
+function stopAllNotes() {
+  Object.keys(activeOscs).forEach(k => {
+    const sem = activeOscs[k].semitone;
+    stopNote(sem);
+  });
+}
+
+/* ─── BELLOWS ENGINE ─── */
+const BELLOW_DECAY = 0.96;
+const BELLOW_PUMP_RATE = 0.045;
+const BELLOW_GYRO_SCALE = 1.8;
+
+setInterval(() => {
+  bellows *= BELLOW_DECAY;
+  bellows = Math.max(0, Math.min(1, bellows));
+
+  if (bellowsPumpActive) bellows = Math.min(1, bellows + BELLOW_PUMP_RATE);
+
+  document.getElementById('bellows-fill').style.width = (bellows * 100) + '%';
+  if (masterGain) {
+    masterGain.gain.setTargetAtTime(bellows * 0.9, audioCtx.currentTime, 0.04);
+  }
+}, 40);
+
+/* ─── GYROSCOPE ─── */
+function handleDeviceMotion(e) {
+  if (!useGyro) return;
+  const beta  = e.beta  || 0;  // front-back tilt
+  const gamma = e.gamma || 0;  // left-right tilt
+
+  // Update bubble position
+  const bx = Math.max(-1, Math.min(1, gamma / 40));
+  const by = Math.max(-1, Math.min(1, (beta - 45) / 40));
+  document.getElementById('gyro-bubble').style.transform =
+    `translate(calc(-50% + ${bx * 18}px), calc(-50% + ${by * 18}px))`;
+
+  document.getElementById('tilt-readout').textContent =
+    `tilt: ${beta.toFixed(1)}° | roll: ${gamma.toFixed(1)}°`;
+
+  if (lastBeta !== null) {
+    const db = Math.abs(beta  - lastBeta);
+    const dg = Math.abs(gamma - lastGamma);
+    const motion = db + dg * 0.5;
+    if (motion > 0.4) {
+      bellows = Math.min(1, bellows + motion * 0.015 * BELLOW_GYRO_SCALE);
+    }
+  }
+  lastBeta  = beta;
+  lastGamma = gamma;
+}
+
+/* Alternative: deviceorientation (beta = forward tilt) */
+function handleOrientation(e) {
+  if (!useGyro) return;
+  const beta  = e.beta  || 0;
+  const gamma = e.gamma || 0;
+
+  const bx = Math.max(-1, Math.min(1, gamma / 40));
+  const by = Math.max(-1, Math.min(1, (beta - 45) / 40));
+  document.getElementById('gyro-bubble').style.transform =
+    `translate(calc(-50% + ${bx * 18}px), calc(-50% + ${by * 18}px))`;
+
+  document.getElementById('tilt-readout').textContent =
+    `tilt: ${beta.toFixed(1)}° | roll: ${gamma.toFixed(1)}°`;
+
+  if (lastBeta !== null) {
+    const db = Math.abs(beta  - lastBeta);
+    const dg = Math.abs(gamma - lastGamma);
+    const motion = db * 0.8 + dg * 0.4;
+    if (motion > 0.3) {
+      bellows = Math.min(1, bellows + motion * 0.012 * BELLOW_GYRO_SCALE);
+    }
+  }
+  lastBeta  = beta;
+  lastGamma = gamma;
+}
+
+async function requestGyro() {
+  if (typeof DeviceMotionEvent !== 'undefined' &&
+      typeof DeviceMotionEvent.requestPermission === 'function') {
+    try {
+      const perm = await DeviceMotionEvent.requestPermission();
+      if (perm === 'granted') {
+        window.addEventListener('devicemotion', handleDeviceMotion);
+        useGyro = true; gyroGranted = true;
+      }
+    } catch(e) { console.warn('Motion permission denied', e); }
+  } else if (typeof DeviceOrientationEvent !== 'undefined') {
+    window.addEventListener('deviceorientation', handleOrientation);
+    useGyro = true; gyroGranted = true;
+  }
+}
+
+/* ─── KEYBOARD BUILDER ─── */
+function buildKeyboard() {
+  const piano = document.getElementById('piano');
+  piano.innerHTML = '';
+  const scale = SCALES[currentScale];
+  document.getElementById('scale-label').textContent = scale.name;
+
+  scale.keys.forEach((k, i) => {
+    const el = document.createElement('div');
+    el.className = `key-${k.type}`;
+    if (scale.pentatonicIndices.includes(i) && currentScale !== 'pentatonic') {
+      el.classList.add('pentatonic');
+    }
+    el.dataset.semitone = k.semitone;
+    el.innerHTML = `<div class="key-label">${k.note}<span class="kb">${k.kb}</span></div>`;
+
+    const press   = () => { initAudio(); startNote(k.semitone); spawnParticle(el); };
+    const release = () => { if (playMode !== 'sustain' && playMode !== 'drone') stopNote(k.semitone); };
+
+    el.addEventListener('pointerdown', e => { e.preventDefault(); press(); });
+    el.addEventListener('pointerup',   e => { e.preventDefault(); release(); });
+    el.addEventListener('pointerleave',e => { e.preventDefault(); release(); });
+
+    piano.appendChild(el);
+  });
+}
+
+/* ─── KEYBOARD INPUT ─── */
+const kbMap = {};
+function buildKbMap() {
+  Object.keys(kbMap).forEach(k => delete kbMap[k]);
+  SCALES[currentScale].keys.forEach(k => {
+    kbMap[k.kb.toLowerCase()] = k.semitone;
+  });
+}
+
+window.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  const key = e.key.toLowerCase();
+
+  // Space = manual bellows pump
+  if (key === ' ') { initAudio(); bellowsPumpActive = true; return; }
+
+  if (kbMap[key] !== undefined) {
+    initAudio();
+    startNote(kbMap[key]);
+    spawnParticle(document.querySelector(`[data-semitone="${kbMap[key]}"]`));
+  }
+});
+
+window.addEventListener('keyup', e => {
+  const key = e.key.toLowerCase();
+  if (key === ' ') { bellowsPumpActive = false; return; }
+  if (kbMap[key] !== undefined) {
+    if (playMode !== 'sustain' && playMode !== 'drone') stopNote(kbMap[key]);
+  }
+});
+
+/* ─── PARTICLES ─── */
+function spawnParticle(el) {
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  const p = document.createElement('div');
+  p.className = 'reed-particle';
+  p.style.left = (r.left + r.width/2 - 1) + 'px';
+  p.style.top  = r.top + 'px';
+  document.body.appendChild(p);
+  p.addEventListener('animationend', () => p.remove());
+}
+
+/* ─── CONTROLS ─── */
+document.getElementById('oct-up').addEventListener('click', () => {
+  if (octave < 6) { octave++; document.getElementById('octave-val').textContent = octave; stopAllNotes(); }
+});
+document.getElementById('oct-dn').addEventListener('click', () => {
+  if (octave > 2) { octave--; document.getElementById('octave-val').textContent = octave; stopAllNotes(); }
+});
+
+document.querySelectorAll('.scale-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentScale = btn.dataset.scale;
+    stopAllNotes();
+    buildKeyboard();
+    buildKbMap();
+  });
+});
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    playMode = btn.dataset.mode;
+  });
+});
+
+/* Manual pump button */
+const manualBtn = document.getElementById('bellow-manual-btn');
+manualBtn.addEventListener('pointerdown', () => { initAudio(); bellowsPumpActive = true; });
+manualBtn.addEventListener('pointerup',   () => { bellowsPumpActive = false; });
+manualBtn.addEventListener('pointerleave',() => { bellowsPumpActive = false; });
+
+/* ─── START OVERLAY ─── */
+document.getElementById('start-btn').addEventListener('click', async () => {
+  initAudio();
+  await requestGyro();
+  document.getElementById('gyro-overlay').classList.add('hidden');
+  document.getElementById('status-badge').textContent = useGyro
+    ? 'Gyro Active' : 'Keyboard Mode';
+  document.getElementById('status-badge').classList.add('active');
+});
+
+/* ─── INIT ─── */
+buildKeyboard();
+buildKbMap();
+</script>
+</body>
+</html>
