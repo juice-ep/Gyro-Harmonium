@@ -1,6 +1,6 @@
 {
-  "name": "G-Harmonium",
-  "short_name": "G-Harmonium",
+  "name": "Harmonium",
+  "short_name": "Harmonium",
   "description": "Gyroscope-powered harmonium with pentatonic and raga scales",
   "start_url": "./index.html",
   "display": "standalone",
