@@ -24,7 +24,6 @@
       --gold2:    #e8b85a;
       --red:      #8b2a1a;
       --felt:     #2d4a2a;
-      --bellows-fill: #c89a46;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,25 +40,17 @@
       -webkit-user-select: none;
     }
 
-    /* Wood grain background */
     body::before {
       content: '';
       position: fixed; inset: 0; z-index: 0;
       background:
-        repeating-linear-gradient(
-          88deg,
-          transparent 0px, transparent 18px,
-          rgba(0,0,0,.08) 18px, rgba(0,0,0,.08) 19px
-        ),
-        repeating-linear-gradient(
-          92deg,
-          transparent 0px, transparent 40px,
-          rgba(255,255,255,.02) 40px, rgba(255,255,255,.02) 41px
-        ),
+        repeating-linear-gradient(88deg, transparent 0px, transparent 18px, rgba(0,0,0,.08) 18px, rgba(0,0,0,.08) 19px),
+        repeating-linear-gradient(92deg, transparent 0px, transparent 40px, rgba(255,255,255,.02) 40px, rgba(255,255,255,.02) 41px),
         linear-gradient(180deg, #2a1208 0%, #1a0d06 40%, #0f0804 100%);
       pointer-events: none;
     }
 
+    /* ═══ PORTRAIT LAYOUT ═══ */
     #app {
       position: relative; z-index: 1;
       height: 100dvh;
@@ -67,40 +58,37 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 8px) env(safe-area-inset-bottom, 10px) env(safe-area-inset-left, 8px);
-      gap: 0;
+      padding: env(safe-area-inset-top, 8px) env(safe-area-inset-right, 8px) env(safe-area-inset-bottom, 8px) env(safe-area-inset-left, 8px);
     }
 
-    /* ─── TOP HEADER ─── */
+    /* ─── HEADER ─── */
     #header {
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 12px 0;
+      padding: 4px 12px 0;
+      flex-shrink: 0;
     }
-
-    #title-block { text-align: left; }
     #title-block h1 {
       font-family: 'IM Fell English', serif;
-      font-size: clamp(1.1rem, 4vw, 1.6rem);
+      font-size: clamp(1rem, 4vw, 1.6rem);
       letter-spacing: .04em;
       color: var(--gold2);
       line-height: 1;
     }
     #title-block p {
-      font-size: clamp(0.55rem, 2vw, 0.7rem);
+      font-size: clamp(0.5rem, 1.8vw, 0.65rem);
       color: rgba(245,237,216,.4);
       font-style: italic;
       letter-spacing: .12em;
       text-transform: uppercase;
     }
-
     #status-badge {
-      font-size: clamp(0.55rem, 1.8vw, 0.68rem);
+      font-size: clamp(0.5rem, 1.6vw, 0.65rem);
       letter-spacing: .08em;
       text-transform: uppercase;
-      padding: 4px 10px;
+      padding: 3px 9px;
       border: 1px solid rgba(200,154,70,.35);
       border-radius: 20px;
       color: rgba(200,154,70,.7);
@@ -114,45 +102,36 @@
       box-shadow: 0 0 12px rgba(232,184,90,.2);
     }
 
-    /* ─── BELLOW SECTION ─── */
+    /* ─── BELLOWS SECTION ─── */
     #bellow-section {
       width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-      padding: 2px 16px;
+      gap: 3px;
+      padding: 0 16px;
+      flex-shrink: 0;
     }
-
     #bellow-label {
-      font-size: clamp(0.55rem, 1.8vw, 0.65rem);
+      font-size: clamp(0.5rem, 1.6vw, 0.62rem);
       letter-spacing: .16em;
       text-transform: uppercase;
       color: rgba(245,237,216,.3);
     }
-
     #bellows-track {
       width: min(460px, 94vw);
-      height: 28px;
+      height: 24px;
       position: relative;
       display: flex;
       align-items: center;
     }
-
-    /* Decorative bellows folds in background */
     #bellows-track::before {
       content: '';
       position: absolute; inset: 0;
       border-radius: 4px;
       border: 1px solid rgba(200,154,70,.25);
-      background:
-        repeating-linear-gradient(
-          90deg,
-          rgba(0,0,0,.25) 0px, rgba(0,0,0,.25) 3px,
-          rgba(255,255,255,.03) 3px, rgba(255,255,255,.03) 14px
-        );
+      background: repeating-linear-gradient(90deg, rgba(0,0,0,.25) 0px, rgba(0,0,0,.25) 3px, rgba(255,255,255,.03) 3px, rgba(255,255,255,.03) 14px);
     }
-
     #bellows-fill {
       height: 100%;
       width: 0%;
@@ -162,16 +141,13 @@
       position: relative; z-index: 1;
       box-shadow: 0 0 8px rgba(200,154,70,.4);
     }
-
     #tilt-readout {
-      font-size: clamp(0.6rem, 2vw, 0.72rem);
+      font-size: clamp(0.55rem, 1.8vw, 0.68rem);
       color: rgba(200,154,70,.5);
       letter-spacing: .05em;
     }
-
-    /* ─── GYRO VISUAL ─── */
     #gyro-vis {
-      width: 60px; height: 60px;
+      width: 54px; height: 54px;
       border-radius: 50%;
       border: 1.5px solid rgba(200,154,70,.3);
       position: relative;
@@ -179,7 +155,7 @@
       flex-shrink: 0;
     }
     #gyro-bubble {
-      width: 16px; height: 16px;
+      width: 14px; height: 14px;
       border-radius: 50%;
       background: radial-gradient(circle at 35% 35%, var(--gold2), var(--gold));
       position: absolute;
@@ -188,8 +164,6 @@
       transition: transform .1s ease-out;
       box-shadow: 0 0 8px rgba(200,154,70,.6);
     }
-
-    /* ─── BELLOW ROW ─── */
     #bellow-row {
       display: flex;
       align-items: center;
@@ -198,13 +172,72 @@
       width: 100%;
       padding: 0 16px;
     }
+    #gyro-hint {
+      font-size: clamp(0.5rem, 1.5vw, 0.62rem);
+      letter-spacing: .1em;
+      color: rgba(245,237,216,.3);
+      font-style: italic;
+    }
 
-    /* ─── OCTAVE SELECTOR ─── */
+    /* ─── MANUAL PUMP BUTTON ─── */
+    #bellow-manual-btn {
+      position: relative;
+      width: min(200px, 44vw);
+      height: 48px;
+      border-radius: 6px;
+      border: 1.5px solid rgba(200,154,70,.4);
+      background: rgba(200,154,70,.06);
+      color: var(--gold2);
+      font-family: 'IM Fell English', serif;
+      font-size: clamp(0.72rem, 2.2vw, 0.88rem);
+      letter-spacing: .06em;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all .15s;
+      overflow: hidden;
+      display: none;
+    }
+    #bellow-manual-btn:active { background: rgba(200,154,70,.18); box-shadow: 0 0 16px rgba(200,154,70,.3); }
+
+    /* ─── SCALE + OCTAVE ROW ─── */
+    #controls-row {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    #scale-row {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 0 8px;
+    }
+    .scale-btn {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.52rem, 1.5vw, 0.65rem);
+      letter-spacing: .07em;
+      padding: 3px 8px;
+      border-radius: 3px;
+      border: 1px solid rgba(200,154,70,.2);
+      background: transparent;
+      color: rgba(245,237,216,.35);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all .2s;
+    }
+    .scale-btn.active {
+      border-color: rgba(200,154,70,.6);
+      background: rgba(200,154,70,.1);
+      color: var(--gold);
+    }
     #octave-strip {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: clamp(0.6rem, 1.8vw, 0.7rem);
+      font-size: clamp(0.55rem, 1.6vw, 0.68rem);
       letter-spacing: .1em;
       color: rgba(245,237,216,.5);
     }
@@ -214,21 +247,16 @@
       border: 1px solid rgba(200,154,70,.3);
       color: var(--ivory);
       border-radius: 4px;
-      width: 26px; height: 26px;
+      width: 24px; height: 24px;
       font-family: 'Cormorant Garamond', serif;
-      font-size: .9rem;
+      font-size: .85rem;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       touch-action: manipulation;
       transition: background .15s;
     }
     .oct-btn:active { background: rgba(200,154,70,.3); }
-    #octave-val {
-      min-width: 20px;
-      text-align: center;
-      color: var(--gold2);
-      font-size: .85rem;
-    }
+    #octave-val { min-width: 18px; text-align: center; color: var(--gold2); font-size: .82rem; }
 
     /* ─── KEYBOARD ─── */
     #keyboard-wrapper {
@@ -236,133 +264,144 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 5px;
       flex: 1;
       justify-content: center;
+      min-height: 0;
     }
-
     #scale-label {
-      font-size: clamp(0.55rem, 1.8vw, 0.65rem);
+      font-size: clamp(0.5rem, 1.6vw, 0.62rem);
       letter-spacing: .2em;
       text-transform: uppercase;
       color: rgba(245,237,216,.3);
       font-style: italic;
+      flex-shrink: 0;
     }
-
-    /* ─── PIANO KEYS ─── */
     #piano {
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      gap: 0;
-      padding: 0 8px;
-      height: clamp(120px, 32vw, 200px);
+      padding: 0 4px;
+      /* Height is dynamic — fills remaining space */
+      height: clamp(100px, 28vw, 190px);
       position: relative;
+      flex-shrink: 0;
     }
 
+    /* ─── KEY STYLES ─── */
     .key-white {
       background: linear-gradient(180deg, #f0e8d0 0%, #f8f2e4 50%, #ede3c8 100%);
       border: 1px solid #9a8060;
       border-top: none;
-      border-radius: 0 0 8px 8px;
-      width: clamp(40px, 9vw, 62px);
+      border-radius: 0 0 7px 7px;
+      width: clamp(36px, 8.5vw, 58px);
       height: 100%;
       margin: 0 1px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-end;
-      padding-bottom: 8px;
+      justify-content: space-between;
+      padding: 5px 0 7px;
       cursor: pointer;
       position: relative;
       touch-action: none;
       transition: background .06s, box-shadow .06s;
       box-shadow: 2px 4px 8px rgba(0,0,0,.5), inset 0 -2px 4px rgba(0,0,0,.15);
     }
-
-    .key-white:active,
-    .key-white.pressed {
+    .key-white:active, .key-white.pressed {
       background: linear-gradient(180deg, #d4a843 0%, #e8c06a 60%, #c89a3a 100%);
       box-shadow: 1px 2px 4px rgba(0,0,0,.5), inset 0 3px 6px rgba(0,0,0,.25);
       transform: scaleY(0.985);
       transform-origin: top;
     }
-
-    .key-label {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(0.55rem, 1.6vw, 0.72rem);
-      font-weight: 600;
-      color: #4a3020;
-      letter-spacing: .04em;
-      text-align: center;
-      line-height: 1.2;
-    }
-    .key-label .kb {
-      display: block;
-      font-size: clamp(0.45rem, 1.2vw, 0.58rem);
-      color: rgba(74,48,32,.5);
-      font-style: italic;
-      margin-top: 2px;
-    }
-
     .key-black {
       background: linear-gradient(180deg, #1c0f07 0%, #2a1610 60%, #1a0c06 100%);
       border: 1px solid #5a3018;
       border-top: none;
-      border-radius: 0 0 6px 6px;
-      width: clamp(28px, 6vw, 42px);
+      border-radius: 0 0 5px 5px;
+      width: clamp(25px, 5.5vw, 40px);
       height: 62%;
       margin: 0 -1px;
       z-index: 2;
       display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      padding-bottom: 6px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0 5px;
       cursor: pointer;
       position: relative;
       touch-action: none;
       transition: background .06s, box-shadow .06s;
       box-shadow: 2px 6px 10px rgba(0,0,0,.7), inset 0 -2px 3px rgba(0,0,0,.3);
     }
-
-    .key-black:active,
-    .key-black.pressed {
+    .key-black:active, .key-black.pressed {
       background: linear-gradient(180deg, #4a2810 0%, #6a3c1a 60%, #3a1e08 100%);
       box-shadow: 1px 3px 5px rgba(0,0,0,.7), inset 0 3px 5px rgba(0,0,0,.4);
       transform: scaleY(0.97);
       transform-origin: top;
     }
 
-    .key-black .key-label { color: rgba(245,237,216,.55); }
-    .key-black .key-label .kb { color: rgba(245,237,216,.25); }
+    /* ── KEY TOP: keyboard shortcut ── */
+    .key-kb {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.42rem, 1.1vw, 0.58rem);
+      font-weight: 300;
+      letter-spacing: .02em;
+      text-align: center;
+      line-height: 1;
+      /* faint, unobtrusive */
+      color: rgba(74, 48, 32, 0.35);
+    }
+    .key-black .key-kb {
+      color: rgba(245, 237, 216, 0.2);
+    }
 
-    /* Pentatonic highlight dot */
+    /* ── KEY BOTTOM: note name ── */
+    .key-note {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.48rem, 1.2vw, 0.65rem);
+      font-weight: 600;
+      letter-spacing: .03em;
+      text-align: center;
+      line-height: 1;
+      color: rgba(74, 48, 32, 0.72);
+    }
+    .key-black .key-note {
+      color: rgba(245, 237, 216, 0.55);
+    }
+    /* Sharp/flat sign slightly smaller */
+    .key-note sup {
+      font-size: 0.75em;
+      vertical-align: super;
+    }
+
+    /* Pentatonic highlight dot on chromatic view */
     .key-white.pentatonic::after,
     .key-black.pentatonic::after {
       content: '';
       position: absolute;
-      top: 7px; left: 50%;
-      transform: translateX(-50%);
-      width: 6px; height: 6px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 5px; height: 5px;
       border-radius: 50%;
       background: var(--gold);
-      opacity: 0.5;
+      opacity: 0.4;
     }
 
-    /* ─── MODE SELECTOR ─── */
+    /* ─── MODE BAR ─── */
     #mode-bar {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       justify-content: center;
-      padding: 0 8px 4px;
+      padding: 0 8px 2px;
+      flex-shrink: 0;
     }
-
     .mode-btn {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(0.6rem, 1.8vw, 0.72rem);
+      font-size: clamp(0.55rem, 1.6vw, 0.7rem);
       letter-spacing: .1em;
       text-transform: uppercase;
-      padding: 5px 12px;
+      padding: 4px 11px;
       border-radius: 3px;
       border: 1px solid rgba(200,154,70,.25);
       background: transparent;
@@ -377,18 +416,26 @@
       color: var(--gold2);
     }
 
-    /* ─── GYRO PERMISSION OVERLAY ─── */
+    /* ─── DECORATIVE FRAME ─── */
+    #frame-top, #frame-bottom {
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold2), var(--gold), transparent);
+      opacity: .35;
+      flex-shrink: 0;
+    }
+
+    /* ─── OVERLAY ─── */
     #gyro-overlay {
       position: fixed; inset: 0; z-index: 100;
       background: rgba(26,13,6,.92);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 20px;
+      gap: 16px;
       backdrop-filter: blur(8px);
-      padding: 32px;
+      padding: 28px;
     }
     #gyro-overlay.hidden { display: none; }
-
     #gyro-overlay h2 {
       font-family: 'IM Fell English', serif;
       font-size: clamp(1.2rem, 5vw, 1.8rem);
@@ -396,18 +443,17 @@
       text-align: center;
     }
     #gyro-overlay p {
-      font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+      font-size: clamp(0.7rem, 2.2vw, 0.85rem);
       color: rgba(245,237,216,.6);
       text-align: center;
       max-width: 320px;
       line-height: 1.6;
     }
-
     .big-btn {
       font-family: 'IM Fell English', serif;
       font-size: clamp(0.9rem, 3vw, 1.1rem);
       letter-spacing: .1em;
-      padding: 12px 32px;
+      padding: 11px 30px;
       border-radius: 5px;
       border: 1.5px solid var(--gold);
       background: rgba(200,154,70,.12);
@@ -420,108 +466,238 @@
       background: rgba(200,154,70,.28);
       box-shadow: 0 0 20px rgba(200,154,70,.25);
     }
-
-    #bellow-manual-btn {
-      position: relative;
-      width: min(200px, 44vw);
-      height: 52px;
+    #brave-notice {
+      display: none;
+      font-size: .72rem;
+      color: #e8b85a;
+      text-align: center;
+      max-width: 300px;
+      line-height: 1.7;
+      border: 1px solid rgba(200,154,70,.3);
+      padding: 10px 14px;
       border-radius: 6px;
-      border: 1.5px solid rgba(200,154,70,.4);
-      background: rgba(200,154,70,.06);
-      color: var(--gold2);
-      font-family: 'IM Fell English', serif;
-      font-size: clamp(0.75rem, 2.5vw, 0.9rem);
-      letter-spacing: .06em;
-      cursor: pointer;
-      touch-action: manipulation;
-      transition: all .15s;
-      overflow: hidden;
-      display: none; /* show on desktop */
-    }
-    #bellow-manual-btn::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(200,154,70,.12), transparent);
-      transform: translateX(-100%);
-      transition: transform .4s;
-    }
-    #bellow-manual-btn:active::before { transform: translateX(100%); }
-    #bellow-manual-btn:active {
-      background: rgba(200,154,70,.18);
-      box-shadow: 0 0 16px rgba(200,154,70,.3);
     }
 
-    /* ─── DECORATIVE FRAME ─── */
-    #frame-top, #frame-bottom {
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, transparent, var(--gold), var(--gold2), var(--gold), transparent);
-      opacity: .35;
-      flex-shrink: 0;
-    }
-
-    /* ─── FLOATING PARTICLE REEDS ─── */
+    /* ─── PARTICLES ─── */
     @keyframes reed-glow {
-      0%, 100% { opacity: 0; transform: translateY(0); }
-      50% { opacity: .6; }
-      100% { opacity: 0; transform: translateY(-30px); }
+      0% { opacity: 0; transform: translateY(0); }
+      40% { opacity: .6; }
+      100% { opacity: 0; transform: translateY(-28px); }
     }
     .reed-particle {
       position: fixed;
-      width: 2px; height: 8px;
+      width: 2px; height: 7px;
       background: var(--gold);
       border-radius: 1px;
       pointer-events: none;
-      animation: reed-glow 1.2s ease-out forwards;
+      animation: reed-glow 1.1s ease-out forwards;
       z-index: 0;
     }
 
-    /* ─── RESPONSIVE LANDSCAPE ─── */
-    @media (orientation: landscape) and (max-height: 500px) {
-      #bellow-section { flex-direction: row; gap: 10px; align-items: center; }
-      #bellows-track { width: 200px; }
-      #tilt-readout { display: none; }
-      #gyro-vis { width: 44px; height: 44px; }
+    /* ════════════════════════════════════════════
+       LANDSCAPE LAYOUT — full re-flow
+       ════════════════════════════════════════════ */
+    @media (orientation: landscape) {
+      #app {
+        flex-direction: row;
+        align-items: stretch;
+        justify-content: flex-start;
+        height: 100dvh;
+        padding: env(safe-area-inset-top, 4px) env(safe-area-inset-right, 8px) env(safe-area-inset-bottom, 4px) env(safe-area-inset-left, 8px);
+        gap: 0;
+      }
+
+      /* Left sidebar: header + bellows + controls */
+      #left-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: stretch;
+        width: clamp(130px, 28vw, 200px);
+        min-width: 0;
+        flex-shrink: 0;
+        padding: 4px 6px;
+        border-right: 1px solid rgba(200,154,70,.15);
+        gap: 4px;
+        overflow: hidden;
+      }
+
+      /* Right panel: keyboard + mode bar */
+      #right-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 4px 8px 4px 8px;
+        gap: 4px;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      #frame-top, #frame-bottom { display: none; }
+
+      /* Header tighter in landscape */
+      #header {
+        padding: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1px;
+        flex-shrink: 0;
+      }
+      #title-block h1 { font-size: clamp(0.9rem, 2.5vh, 1.2rem); }
+      #title-block p  { font-size: clamp(0.42rem, 1.2vh, 0.55rem); }
+      #status-badge   { font-size: clamp(0.42rem, 1.1vh, 0.55rem); padding: 2px 7px; margin-top: 2px; }
+
+      /* Bellows section vertical in left panel */
+      #bellow-section {
+        flex-direction: column;
+        gap: 3px;
+        padding: 0;
+        align-items: stretch;
+      }
+      #bellow-row {
+        flex-direction: column;
+        gap: 4px;
+        padding: 0;
+        align-items: center;
+      }
+      #gyro-vis { width: 38px; height: 38px; }
+      #gyro-bubble { width: 11px; height: 11px; }
+
+      /* Bellows track vertical */
+      #bellows-track {
+        width: 100%;
+        height: 18px;
+      }
+      #bellow-label { font-size: clamp(0.42rem, 1.1vh, 0.55rem); }
+      #tilt-readout { font-size: clamp(0.4rem, 1vh, 0.52rem); }
+      #gyro-hint    { font-size: clamp(0.4rem, 1vh, 0.52rem); }
+      #bellow-manual-btn { width: 100%; height: 32px; font-size: clamp(0.6rem, 1.5vh, 0.75rem); }
+
+      /* Controls section */
+      #controls-row { gap: 3px; }
+      #scale-row { gap: 3px; }
+      .scale-btn { font-size: clamp(0.42rem, 1.1vh, 0.56rem); padding: 2px 5px; }
+      #octave-strip { gap: 4px; font-size: clamp(0.42rem, 1.1vh, 0.56rem); }
+      .oct-btn { width: 20px; height: 20px; font-size: .75rem; }
+
+      /* Keyboard fills right panel height */
+      #keyboard-wrapper {
+        flex: 1;
+        width: 100%;
+        gap: 3px;
+        justify-content: center;
+        min-height: 0;
+      }
+      #piano {
+        height: clamp(70px, 58vh, 160px);
+        width: 100%;
+      }
+      .key-white { width: clamp(28px, 7.5vw, 52px); }
+      .key-black { width: clamp(19px, 5vw, 34px); }
+      #scale-label { font-size: clamp(0.4rem, 1.1vh, 0.56rem); }
+
+      /* Mode bar fits in right panel */
+      #mode-bar {
+        padding: 0;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+      .mode-btn { font-size: clamp(0.48rem, 1.2vh, 0.62rem); padding: 3px 9px; }
     }
 
-    /* ─── DESKTOP HINT ─── */
+    /* Desktop shows pump button */
     @media (pointer: fine) {
       #bellow-manual-btn { display: flex; align-items: center; justify-content: center; }
       #gyro-hint { display: none; }
     }
 
-    #gyro-hint {
-      font-size: clamp(0.55rem, 1.6vw, 0.65rem);
-      letter-spacing: .1em;
-      color: rgba(245,237,216,.3);
-      font-style: italic;
-    }
-
-    /* Scale selection row */
-    #scale-row {
+    /* ─── REED STOPS ─── */
+    #reed-stops-row {
       display: flex;
-      gap: 5px;
+      align-items: center;
+      gap: 6px;
       justify-content: center;
-      flex-wrap: wrap;
-      padding: 0 8px;
+      padding: 2px 0;
+      width: 100%;
     }
-    .scale-btn {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(0.55rem, 1.6vw, 0.68rem);
-      letter-spacing: .07em;
-      padding: 4px 9px;
-      border-radius: 3px;
-      border: 1px solid rgba(200,154,70,.2);
-      background: transparent;
-      color: rgba(245,237,216,.35);
+    .stops-label {
+      font-size: clamp(0.48rem, 1.4vw, 0.6rem);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(245,237,216,.3);
+      flex-shrink: 0;
+    }
+    #reed-stops {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    /* Each stop is a vertical pull-knob like the real instrument */
+    .stop-knob {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      background: none;
+      border: none;
       cursor: pointer;
       touch-action: manipulation;
-      transition: all .2s;
+      padding: 0;
+      position: relative;
     }
-    .scale-btn.active {
-      border-color: rgba(200,154,70,.6);
-      background: rgba(200,154,70,.1);
+    .knob-shaft {
+      width: 5px;
+      height: 18px;
+      background: linear-gradient(180deg, #4a2a0e, #2a1408);
+      border-radius: 2px;
+      border: 1px solid rgba(200,154,70,.2);
+      transition: height .2s ease, background .2s;
+      display: block;
+    }
+    .knob-cap {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 32%, #5a3010, #2a1408);
+      border: 1.5px solid rgba(200,154,70,.25);
+      box-shadow: 0 2px 5px rgba(0,0,0,.6), inset 0 1px 2px rgba(255,255,255,.08);
+      transition: all .2s ease;
+      display: block;
+      margin-top: 2px;
+    }
+    .knob-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.42rem, 1.1vw, 0.54rem);
+      color: rgba(245,237,216,.35);
+      letter-spacing: .06em;
+      margin-top: 3px;
+      transition: color .2s;
+    }
+    /* ACTIVE (pulled out) state — shaft extends, cap glows */
+    .stop-knob.active .knob-shaft {
+      height: 26px;
+      background: linear-gradient(180deg, #8b5020, #5a3010);
+      border-color: rgba(200,154,70,.5);
+    }
+    .stop-knob.active .knob-cap {
+      background: radial-gradient(circle at 38% 32%, var(--gold2), var(--gold));
+      border-color: var(--gold2);
+      box-shadow: 0 0 8px rgba(232,184,90,.45), 0 2px 5px rgba(0,0,0,.4), inset 0 1px 2px rgba(255,255,255,.25);
+    }
+    .stop-knob.active .knob-name {
       color: var(--gold);
+    }
+
+    /* Landscape: tighter knobs */
+    @media (orientation: landscape) {
+      #reed-stops-row { gap: 4px; padding: 1px 0; }
+      #reed-stops { gap: 5px; }
+      .knob-shaft { height: 14px; width: 4px; }
+      .stop-knob.active .knob-shaft { height: 20px; }
+      .knob-cap { width: 15px; height: 15px; }
+      .knob-name { font-size: clamp(0.38rem, 1vh, 0.5rem); margin-top: 2px; }
     }
   </style>
 </head>
@@ -529,79 +705,135 @@
 <div id="app">
   <div id="frame-top"></div>
 
-  <!-- HEADER -->
-  <div id="header">
-    <div id="title-block">
-      <h1>Harmonium</h1>
-      <p>Gyroscope Bellows</p>
-    </div>
-    <div id="status-badge">Tap to begin</div>
-  </div>
-
-  <!-- BELLOWS -->
-  <div id="bellow-section">
-    <div id="bellow-row">
-      <div id="gyro-vis"><div id="gyro-bubble"></div></div>
-      <div style="flex:1; display:flex; flex-direction:column; gap:5px; align-items:center;">
-        <div id="bellow-label">Bellows Pressure</div>
-        <div id="bellows-track"><div id="bellows-fill"></div></div>
-        <div id="tilt-readout">tilt: — ° &nbsp;|&nbsp; roll: — °</div>
+  <!-- Left panel wrapper (becomes sidebar in landscape) -->
+  <div id="left-panel">
+    <!-- HEADER -->
+    <div id="header">
+      <div id="title-block">
+        <h1>G-Harmonium</h1>
+        <p>Gyroscope Bellows</p>
       </div>
-      <button id="bellow-manual-btn" title="Hold Space to pump bellows">PUMP<br><small style="font-size:.65em;font-family:'Cormorant Garamond',serif;opacity:.6">hold space</small></button>
+      <div id="status-badge">Tap to begin</div>
     </div>
-    <div id="gyro-hint">Tilt or rock device to pump bellows</div>
-  </div>
 
-  <!-- SCALE + OCTAVE -->
-  <div style="width:100%;display:flex;flex-direction:column;gap:5px;align-items:center;">
-    <div id="scale-row">
-      <button class="scale-btn active" data-scale="pentatonic">Pentatonic</button>
-      <button class="scale-btn" data-scale="full">Full Chromatic</button>
-      <button class="scale-btn" data-scale="bhairav">Bhairav</button>
-      <button class="scale-btn" data-scale="yaman">Yaman</button>
+    <!-- BELLOWS -->
+    <div id="bellow-section">
+      <div id="bellow-row">
+        <div id="gyro-vis"><div id="gyro-bubble"></div></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:4px;align-items:center;min-width:0;width:100%;">
+          <div id="bellow-label">Bellows Pressure</div>
+          <div id="bellows-track"><div id="bellows-fill"></div></div>
+          <div id="tilt-readout">tilt — ° &nbsp;|&nbsp; roll — °</div>
+        </div>
+        <button id="bellow-manual-btn" title="Hold Space to pump bellows">PUMP<br><small style="font-size:.62em;font-family:'Cormorant Garamond',serif;opacity:.6">hold space</small></button>
+      </div>
+      <div id="gyro-hint">Tilt or rock device to pump bellows</div>
     </div>
-    <div id="octave-strip">
-      <span>Oct</span>
-      <button class="oct-btn" id="oct-dn">−</button>
-      <span id="octave-val">4</span>
-      <button class="oct-btn" id="oct-up">+</button>
+
+    <!-- SCALE + OCTAVE + REED STOPS -->
+    <div id="controls-row">
+      <div id="scale-row">
+        <button class="scale-btn active" data-scale="pentatonic">Pentatonic</button>
+        <button class="scale-btn" data-scale="full">Chromatic</button>
+        <button class="scale-btn" data-scale="bhairav">Bhairav</button>
+        <button class="scale-btn" data-scale="yaman">Yaman</button>
+      </div>
+      <div id="octave-strip">
+        <span>Oct</span>
+        <button class="oct-btn" id="oct-dn">&#8722;</button>
+        <span id="octave-val">4</span>
+        <button class="oct-btn" id="oct-up">+</button>
+      </div>
+      <!-- Reed stops: modelled on real harmonium air-stop pull-knobs.
+           Bass = −12 semitones (1 oct down), Male = 0 (unison, default),
+           Female = +12 (1 oct up), Coupler = +12 layered on whatever is active -->
+      <div id="reed-stops-row">
+        <span class="stops-label">Stops</span>
+        <div id="reed-stops">
+          <button class="stop-knob" data-reed="bass"    title="Bass reed — one octave below">
+            <span class="knob-shaft"></span><span class="knob-cap"></span>
+            <span class="knob-name">Bass</span>
+          </button>
+          <button class="stop-knob active" data-reed="male" title="Male reed — unison (default, most natural)">
+            <span class="knob-shaft"></span><span class="knob-cap"></span>
+            <span class="knob-name">Male</span>
+          </button>
+          <button class="stop-knob" data-reed="female"  title="Female reed — one octave above">
+            <span class="knob-shaft"></span><span class="knob-cap"></span>
+            <span class="knob-name">Female</span>
+          </button>
+          <button class="stop-knob" data-reed="coupler" title="Coupler — adds octave above any active reeds">
+            <span class="knob-shaft"></span><span class="knob-cap"></span>
+            <span class="knob-name">Cplr</span>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
+  </div><!-- /left-panel -->
 
-  <!-- PIANO -->
-  <div id="keyboard-wrapper">
-    <div id="scale-label">Pentatonic Scale — C Major</div>
-    <div id="piano"><!-- generated by JS --></div>
-  </div>
+  <!-- Right panel (keyboard + modes) -->
+  <div id="right-panel">
+    <!-- PIANO -->
+    <div id="keyboard-wrapper">
+      <div id="scale-label">Pentatonic Scale — C Major</div>
+      <div id="piano"><!-- generated by JS --></div>
+    </div>
 
-  <!-- MODE BAR -->
-  <div id="mode-bar">
-    <button class="mode-btn active" data-mode="sustain">Sustain</button>
-    <button class="mode-btn" data-mode="staccato">Staccato</button>
-    <button class="mode-btn" data-mode="drone">Drone</button>
-  </div>
+    <!-- MODE BAR -->
+    <div id="mode-bar">
+      <button class="mode-btn active" data-mode="sustain">Sustain</button>
+      <button class="mode-btn" data-mode="staccato">Staccato</button>
+      <button class="mode-btn" data-mode="drone">Drone</button>
+    </div>
+  </div><!-- /right-panel -->
 
   <div id="frame-bottom"></div>
-</div>
+</div><!-- /app -->
 
 <!-- PERMISSION OVERLAY -->
 <div id="gyro-overlay">
   <h2>Tap to Awaken</h2>
-  <p>This harmonium uses your device's gyroscope to control the bellows. Tilt or rock the device to pump air — just like a real harmonium.</p>
+  <p>G-Harmonium uses your device's gyroscope to control the bellows. Tilt or rock the device to pump air — just like a real harmonium.</p>
   <button class="big-btn" id="start-btn">Begin Playing</button>
-  <p style="font-size:.62rem;opacity:.4;">On iOS, a system permission prompt will appear. On Android, gyro activates automatically. On desktop, hold Space to pump.</p>
+  <p id="brave-notice">
+    ⚠️ <strong>Brave Browser detected</strong><br>
+    Brave blocks motion sensors by default.<br>
+    To enable: Settings → Site Settings → Motion Sensors → Allow<br>
+    <span style="opacity:.6;font-size:.65rem;">Or use Space bar / keyboard to play.</span>
+  </p>
+  <p style="font-size:.6rem;opacity:.4;">iOS shows a system permission prompt. Android gyro activates automatically (except Brave). Desktop: hold Space.</p>
 </div>
 
 <script>
 /* ═══════════════════════════════════════════════════════
-   iHARMONIUM — Gyroscope PWA
+   G-HARMONIUM — Gyroscope PWA
    Remixed from gajraj-m/iharmonium
+   Samples: CC0 from donyaquick / cabled_mess (Freesound)
    ═══════════════════════════════════════════════════════ */
+
+/* ─── NOTE NAME HELPERS ─── */
+// Full chromatic note names used for key labels
+const NOTE_NAMES_SHARP = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const NOTE_NAMES_FLAT  = ['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+
+// For display: prefer sharps except for Bb/Eb/Ab/Db/Gb
+function noteName(semitone) {
+  // semitone is relative to C (0=C)
+  const s = ((semitone % 12) + 12) % 12;
+  // Use flat names for these: Db Eb Gb Ab Bb
+  const preferFlat = [1,3,6,8,10]; // same indices
+  return preferFlat.includes(s) ? NOTE_NAMES_FLAT[s] : NOTE_NAMES_SHARP[s];
+}
+// Split note name into base + accidental for HTML rendering
+function noteHtml(name) {
+  if (name.length === 1) return name;
+  const acc = name.slice(1); // ♯ or ♭
+  return name[0] + `<sup>${acc}</sup>`;
+}
 
 const SCALES = {
   pentatonic: {
     name: 'Pentatonic — C Major',
-    // C D E G A C D E G A
     keys: [
       { note:'C',  type:'white', kb:'A', semitone:0  },
       { note:'D',  type:'white', kb:'S', semitone:2  },
@@ -620,16 +852,16 @@ const SCALES = {
     name: 'Chromatic — C Major',
     keys: [
       { note:'C',  type:'white', kb:'A',  semitone:0  },
-      { note:'C#', type:'black', kb:'W',  semitone:1  },
+      { note:'C♯', type:'black', kb:'W',  semitone:1  },
       { note:'D',  type:'white', kb:'S',  semitone:2  },
-      { note:'D#', type:'black', kb:'E',  semitone:3  },
+      { note:'E♭', type:'black', kb:'E',  semitone:3  },
       { note:'E',  type:'white', kb:'D',  semitone:4  },
       { note:'F',  type:'white', kb:'F',  semitone:5  },
-      { note:'F#', type:'black', kb:'T',  semitone:6  },
+      { note:'F♯', type:'black', kb:'T',  semitone:6  },
       { note:'G',  type:'white', kb:'G',  semitone:7  },
-      { note:'G#', type:'black', kb:'Y',  semitone:8  },
+      { note:'A♭', type:'black', kb:'Y',  semitone:8  },
       { note:'A',  type:'white', kb:'H',  semitone:9  },
-      { note:'A#', type:'black', kb:'U',  semitone:10 },
+      { note:'B♭', type:'black', kb:'U',  semitone:10 },
       { note:'B',  type:'white', kb:'J',  semitone:11 },
       { note:'C',  type:'white', kb:'K',  semitone:12 },
     ],
@@ -638,155 +870,123 @@ const SCALES = {
   bhairav: {
     name: 'Bhairav — Dawn Raga',
     keys: [
-      { note:'S',   type:'white', kb:'A', semitone:0  },
+      { note:'Sa',  type:'white', kb:'A', semitone:0  },
       { note:'re',  type:'black', kb:'W', semitone:1  },
-      { note:'G',   type:'white', kb:'S', semitone:4  },
-      { note:'M',   type:'white', kb:'D', semitone:5  },
-      { note:'P',   type:'white', kb:'F', semitone:7  },
-      { note:'dh',  type:'black', kb:'T', semitone:8  },
-      { note:'N',   type:'white', kb:'G', semitone:11 },
-      { note:'S̈',   type:'white', kb:'H', semitone:12 },
+      { note:'Ga',  type:'white', kb:'S', semitone:4  },
+      { note:'Ma',  type:'white', kb:'D', semitone:5  },
+      { note:'Pa',  type:'white', kb:'F', semitone:7  },
+      { note:'dha', type:'black', kb:'T', semitone:8  },
+      { note:'Ni',  type:'white', kb:'G', semitone:11 },
+      { note:'Sa\'',type:'white', kb:'H', semitone:12 },
     ],
     pentatonicIndices: [0,1,2,3,4,5,6,7],
   },
   yaman: {
     name: 'Yaman — Evening Raga',
     keys: [
-      { note:'S',  type:'white', kb:'A', semitone:0  },
-      { note:'R',  type:'white', kb:'S', semitone:2  },
-      { note:'G',  type:'white', kb:'D', semitone:4  },
-      { note:'M#', type:'black', kb:'T', semitone:6  },
-      { note:'P',  type:'white', kb:'F', semitone:7  },
-      { note:'D',  type:'white', kb:'G', semitone:9  },
-      { note:'N',  type:'white', kb:'H', semitone:11 },
-      { note:'S̈',  type:'white', kb:'J', semitone:12 },
+      { note:'Sa',  type:'white', kb:'A', semitone:0  },
+      { note:'Re',  type:'white', kb:'S', semitone:2  },
+      { note:'Ga',  type:'white', kb:'D', semitone:4  },
+      { note:'Ma♯', type:'black', kb:'T', semitone:6  },
+      { note:'Pa',  type:'white', kb:'F', semitone:7  },
+      { note:'Dha', type:'white', kb:'G', semitone:9  },
+      { note:'Ni',  type:'white', kb:'H', semitone:11 },
+      { note:'Sa\'',type:'white', kb:'J', semitone:12 },
     ],
     pentatonicIndices: [0,1,2,3,4,5,6,7],
   },
 };
 
 /* ─── STATE ─── */
+/* ─── REED STOPS STATE ───────────────────────────────────────────
+   activeReeds: which stops are currently pulled out.
+   Bass   = play sample 12 semitones lower  (vol 0.75 — warmer, recessed)
+   Male   = play sample at pitch            (vol 0.90 — natural, clearest)
+   Female = play sample 12 semitones higher (vol 0.65 — brighter, airy)
+   Coupler= add octave above male/female    (vol 0.50 — full, layered)
+   Each active reed spawns its own source node through the shared filter.
+   ─────────────────────────────────────────────────────────────── */
+const activeReeds = new Set(['male']); // default: male only
+
+// Volume and octave offset per reed voice
+const REED_CONFIG = {
+  bass:    { semitoneOffset: -12, vol: 0.75 },
+  male:    { semitoneOffset:   0, vol: 0.90 },
+  female:  { semitoneOffset: +12, vol: 0.65 },
+  coupler: { semitoneOffset: +12, vol: 0.50 },
+};
+
 let audioCtx = null, masterGain = null;
 let bellows = 0, lastBeta = null, lastGamma = null;
 let activeOscs = {};
-const activePointers = new Map(); // pointerId → semitone
+const activePointers = new Map();
 let octave = 4;
 let currentScale = 'pentatonic';
 let playMode = 'sustain';
-let gyroGranted = false;
 let useGyro = false;
-let bellowsPumpActive = false; // for space bar / manual btn
+let gyroActive = false;
+let bellowsPumpActive = false;
 
-/* ─── BASE FREQUENCIES ─── */
-const A4 = 440;
-function midiToFreq(midi) { return A4 * Math.pow(2, (midi - 69) / 12); }
-function noteFreq(semitone, oct) {
-  // C4 = midi 60
-  return midiToFreq(60 + semitone + (oct - 4) * 12);
-}
+/* ─── FREQUENCIES ─── */
+function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+function noteFreq(semitone, oct) { return midiToFreq(60 + semitone + (oct - 4) * 12); }
 
-/* ═══════════════════════════════════════════════════════════
-   REAL SAMPLE ENGINE
-   ─────────────────────────────────────────────────────────
-   Samples: CC0 (public domain) harmonium recordings by
-     donyaquick (Yale Euterpea Studio) + cabled_mess (trimmed)
-     https://freesound.org/people/donyaquick/sounds/330410/
-     https://freesound.org/people/cabled_mess/packs/29512/
-
-   Architecture:
-     • Sparse sample set: one recorded note every ~3 semitones
-     • Pitch-shifted via AudioBufferSourceNode.playbackRate
-       for notes between samples (never more than ±2 semitones
-       of shift — inaudible on harmonium's stable reed timbre)
-     • Per-note lowpass filter: bellows → filter cutoff
-       (maps air pressure to timbral brightness, just like
-       physically pushing more air past the reeds)
-     • Synthetic room reverb IR (exponential noise decay)
-     • Samples loaded lazily and cached in sampleCache[]
-   ═══════════════════════════════════════════════════════════ */
-
-// Freesound CDN pattern: https://freesound.org/data/previews/{id//100}/{id}_hq.mp3
-// These are the CC0 samples from cabled_mess pack 29512.
-// IDs sourced from: https://freesound.org/people/cabled_mess/packs/29512/
-// noteId = MIDI note number (C3=48, C4=60, etc.)
-// We use the HQ preview MP3s (no login required, publicly accessible).
+/* ═══════════════════════════════════════════════
+   SAMPLE ENGINE — CC0 Freesound harmonium
+   ═══════════════════════════════════════════════ */
 const SAMPLE_MAP = {
-  // MIDI: freesound ID     (note)
-  48:  523878,  // C3
-  51:  523880,  // D#3 / Eb3
-  53:  523882,  // F3
-  55:  523888,  // G3
-  56:  523887,  // G#3
-  60:  null,    // C4 — will derive from C3 + 12 semitones shift
-  62:  null,    // D4
-  65:  523885,  // F4
-  67:  523881,  // G4
-  68:  523886,  // G#4
-  43:  523889,  // G2
-  44:  523884,  // G#2
-  41:  523883,  // F2
+  48: 523878, 51: 523880, 53: 523882,
+  55: 523888, 56: 523887, 65: 523885,
+  67: 523881, 68: 523886, 43: 523889,
+  44: 523884, 41: 523883,
 };
 
-// Nearest recorded note for any MIDI pitch
 function nearestSample(midi) {
-  const keys = Object.keys(SAMPLE_MAP).map(Number).filter(k => SAMPLE_MAP[k] !== null);
-  return keys.reduce((best, k) => Math.abs(k - midi) < Math.abs(best - midi) ? k : best);
+  const keys = Object.keys(SAMPLE_MAP).map(Number);
+  return keys.reduce((b, k) => Math.abs(k - midi) < Math.abs(b - midi) ? k : b);
 }
 
-const sampleCache = {};   // midi → AudioBuffer
-const loadQueue   = {};   // midi → Promise
+const sampleCache = {}, loadQueue = {};
 
-function freesoundPreviewUrl(id) {
-  const dir = Math.floor(id / 1000);
-  return `https://freesound.org/data/previews/${dir}/${id}_hq.mp3`;
+function freesoundUrl(id) {
+  return `https://freesound.org/data/previews/${Math.floor(id/1000)}/${id}_hq.mp3`;
 }
 
-async function loadSample(midiRoot) {
-  if (sampleCache[midiRoot]) return sampleCache[midiRoot];
-  if (loadQueue[midiRoot])   return loadQueue[midiRoot];
-
-  const id  = SAMPLE_MAP[midiRoot];
+async function loadSample(root) {
+  if (sampleCache[root]) return sampleCache[root];
+  if (loadQueue[root])   return loadQueue[root];
+  const id = SAMPLE_MAP[root];
   if (!id) return null;
-  const url = freesoundPreviewUrl(id);
-
-  loadQueue[midiRoot] = fetch(url)
+  loadQueue[root] = fetch(freesoundUrl(id))
     .then(r => r.arrayBuffer())
     .then(ab => audioCtx.decodeAudioData(ab))
-    .then(buf => { sampleCache[midiRoot] = buf; return buf; })
-    .catch(err => { console.warn('Sample load failed', midiRoot, err); return null; });
-
-  return loadQueue[midiRoot];
+    .then(buf => { sampleCache[root] = buf; return buf; })
+    .catch(() => null);
+  return loadQueue[root];
 }
 
-// Preload the most-used samples in the background after audio init
 function preloadCoreSamples() {
-  [48, 51, 53, 55, 56, 65, 67, 68, 43, 41].forEach(m => loadSample(m));
+  [48,51,53,55,56,65,67,68,43,41].forEach(m => loadSample(m));
 }
 
-/* ─── REVERB (woody room impulse) ─── */
-let reverbNode = null, reverbGainNode = null;
+/* ─── REVERB ─── */
+let reverbNode = null;
 function buildReverb(ctx) {
   if (reverbNode) return;
-  // Asymmetric stereo noise decay — sounds more like a room than pink noise
-  const sr  = ctx.sampleRate;
-  const len = sr * 1.1;
+  const sr = ctx.sampleRate, len = sr * 1.1;
   const buf = ctx.createBuffer(2, len, sr);
   for (let ch = 0; ch < 2; ch++) {
     const d = buf.getChannelData(ch);
     for (let i = 0; i < len; i++) {
       const t = i / len;
-      // Early reflections (0–80ms) + late diffuse tail
       const early = i < sr * 0.08 ? 0.4 * (Math.random() * 2 - 1) : 0;
-      const late  = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.2) * 0.6;
-      d[i] = early + late;
+      d[i] = early + (Math.random() * 2 - 1) * Math.pow(1 - t, 2.2) * 0.6;
     }
   }
   reverbNode = ctx.createConvolver();
   reverbNode.buffer = buf;
-  reverbGainNode = ctx.createGain();
-  reverbGainNode.gain.value = 0.22;
-  reverbNode.connect(reverbGainNode);
-  reverbGainNode.connect(masterGain);
+  const rg = ctx.createGain(); rg.gain.value = 0.14;  // subtler room — body not shimmer
+  reverbNode.connect(rg); rg.connect(masterGain);
 }
 
 /* ─── AUDIO INIT ─── */
@@ -800,81 +1000,88 @@ function initAudio() {
   preloadCoreSamples();
 }
 
-/* ─── BELLOWS → FILTER ─── */
+/* ─── FILTER ─── */
 let filterNodes = {};
 function updateFilterCutoffs() {
   if (!audioCtx) return;
-  // Logarithmic mapping: low bellows = warm & muffled, full bellows = bright & cutting
-  const minF = 600, maxF = 5000;
-  const cutoff = minF * Math.pow(maxF / minF, Math.max(0.02, bellows));
-  Object.values(filterNodes).forEach(f => {
-    f.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.06);
-  });
+  // 400 Hz (soft/muffled) → 2200 Hz (full, warm) — no brightness, just body
+  const cutoff = 400 * Math.pow(2200/400, Math.max(0.02, bellows));
+  Object.values(filterNodes).forEach(f => f.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.06));
 }
 
-/* ─── START NOTE (sample playback) ─── */
+/* ─── START NOTE ─── */
 function startNote(semitone) {
   if (!audioCtx) return;
   const key = `s${semitone}`;
   if (activeOscs[key]) return;
+  if (activeReeds.size === 0) return; // no stops pulled — no sound (authentic)
 
-  const targetMidi  = 60 + semitone + (octave - 4) * 12;
-  const rootMidi    = nearestSample(targetMidi);
-  const semitonesDiff = targetMidi - rootMidi;
-  // playbackRate shift: 2^(n/12)
-  const rate = Math.pow(2, semitonesDiff / 12);
-
-  // Mark as active immediately so repeated taps don't double-trigger
-  activeOscs[key] = { nodes: [], semitone, pending: true };
-
+  activeOscs[key] = { semitone, pending: true };
   const el = document.querySelector(`[data-semitone="${semitone}"]`);
   if (el) el.classList.add('pressed');
 
-  loadSample(rootMidi).then(buffer => {
-    // Note may have been released while loading
+  const baseMidi = 60 + semitone + (octave - 4) * 12;
+  const t0 = audioCtx.currentTime;
+
+  // Shared lowpass filter — bellows drives cutoff for all voices together
+  const filt = audioCtx.createBiquadFilter();
+  filt.type = 'lowpass';
+  filt.Q.value = 0.5;
+  filt.frequency.value = 400 * Math.pow(2200/400, Math.max(0.02, bellows));
+  filt.connect(reverbNode);
+  filt.connect(masterGain);
+  filterNodes[key] = filt;
+
+  // One env per note (all reed voices share it — attack/release together)
+  const env = audioCtx.createGain();
+  env.gain.setValueAtTime(0, t0);
+  env.gain.linearRampToValueAtTime(0.0001, t0 + 0.012);
+  env.gain.exponentialRampToValueAtTime(0.72, t0 + 0.10);
+  env.connect(filt);
+
+  const allNodes = [env, filt];
+  const loadPromises = [];
+
+  // Build a voice for each active reed stop
+  for (const reedName of activeReeds) {
+    const cfg = REED_CONFIG[reedName];
+    const targetMidi = baseMidi + cfg.semitoneOffset;
+    const rootMidi   = nearestSample(Math.max(36, Math.min(84, targetMidi)));
+    const rate       = Math.pow(2, (targetMidi - rootMidi) / 12);
+
+    // Per-voice gain for volume balance between reed types
+    const voiceGain = audioCtx.createGain();
+    voiceGain.gain.value = cfg.vol;
+    voiceGain.connect(env);
+
+    const p = loadSample(rootMidi).then(buffer => {
+      if (!activeOscs[key]) return; // note released while loading
+      if (!buffer) {
+        // Fallback oscillator
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.value = 440 * Math.pow(2, (targetMidi - 69) / 12);
+        osc.connect(voiceGain);
+        osc.start(t0);
+        allNodes.push(osc, voiceGain);
+      } else {
+        const src = audioCtx.createBufferSource();
+        src.buffer = buffer;
+        src.playbackRate.value = rate;
+        src.loop = true;
+        src.loopStart = buffer.duration * 0.18;
+        src.loopEnd   = buffer.duration * 0.92;
+        src.connect(voiceGain);
+        src.start(t0);
+        allNodes.push(src, voiceGain);
+      }
+    });
+    loadPromises.push(p);
+  }
+
+  Promise.all(loadPromises).then(() => {
     if (!activeOscs[key]) return;
-
-    const t = audioCtx.currentTime;
-
-    // Per-note filter
-    const filt = audioCtx.createBiquadFilter();
-    filt.type = 'lowpass';
-    filt.Q.value = 1.2;
-    const minF = 600, maxF = 5000;
-    filt.frequency.value = minF * Math.pow(maxF / minF, Math.max(0.02, bellows));
-    filt.connect(reverbNode);   // wet send
-    filt.connect(masterGain);   // dry
-    filterNodes[key] = filt;
-
-    // Gain envelope
-    const envGain = audioCtx.createGain();
-    envGain.gain.setValueAtTime(0, t);
-    envGain.gain.linearRampToValueAtTime(0.001, t + 0.008);
-    envGain.gain.exponentialRampToValueAtTime(0.85, t + 0.06); // reed attack
-    envGain.connect(filt);
-
-    if (!buffer) {
-      // Fallback: simple oscillator if sample failed to load
-      const osc = audioCtx.createOscillator();
-      osc.type = 'sawtooth';
-      osc.frequency.value = 440 * Math.pow(2, (targetMidi - 69) / 12);
-      osc.connect(envGain);
-      osc.start(t);
-      activeOscs[key] = { nodes: [osc, envGain, filt], semitone, envGain };
-    } else {
-      // Real sample: loop the sustain portion
-      const src = audioCtx.createBufferSource();
-      src.buffer = buffer;
-      src.playbackRate.value = rate;
-      // Loop from 20% into buffer to end — avoids attack click on loop
-      src.loop = true;
-      src.loopStart = buffer.duration * 0.18;
-      src.loopEnd   = buffer.duration * 0.92;
-      src.connect(envGain);
-      src.start(t);
-      activeOscs[key] = { nodes: [src, envGain, filt], semitone, envGain, src };
-    }
-
+    activeOscs[key] = { semitone, envGain: env, nodes: allNodes };
     if (playMode === 'staccato') setTimeout(() => stopNote(semitone), 200);
   });
 }
@@ -885,21 +1092,16 @@ function stopNote(semitone) {
   if (!activeOscs[key]) return;
   const { nodes, envGain, src } = activeOscs[key];
   delete activeOscs[key];
-
   const el = document.querySelector(`[data-semitone="${semitone}"]`);
   if (el) el.classList.remove('pressed');
-
-  if (!envGain) return; // still pending load — just cleared activeOscs above
-
+  if (!envGain) return;
   const t = audioCtx.currentTime;
   envGain.gain.cancelScheduledValues(t);
   envGain.gain.setValueAtTime(envGain.gain.value, t);
-  envGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); // natural reed stop
-
+  envGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
   if (src) src.stop(t + 0.22);
-
   setTimeout(() => {
-    nodes.forEach(n => { try { n.disconnect(); } catch(_){} });
+    if (nodes) nodes.forEach(n => { try { n.disconnect(); } catch(_){} });
     const fk = filterNodes[key];
     if (fk) { try { fk.disconnect(); } catch(_){} delete filterNodes[key]; }
   }, 350);
@@ -913,16 +1115,14 @@ function stopAllNotes() {
 }
 
 /* ─── BELLOWS ENGINE ─── */
-const BELLOW_DECAY = 0.96;
+const BELLOW_DECAY     = 0.96;
 const BELLOW_PUMP_RATE = 0.045;
 const BELLOW_GYRO_SCALE = 1.8;
 
 setInterval(() => {
   bellows *= BELLOW_DECAY;
   bellows = Math.max(0, Math.min(1, bellows));
-
   if (bellowsPumpActive) bellows = Math.min(1, bellows + BELLOW_PUMP_RATE);
-
   document.getElementById('bellows-fill').style.width = (bellows * 100) + '%';
   if (masterGain) {
     masterGain.gain.setTargetAtTime(bellows * 0.9, audioCtx.currentTime, 0.04);
@@ -931,133 +1131,95 @@ setInterval(() => {
 }, 40);
 
 /* ─── GYROSCOPE ─── */
-// iOS DeviceMotion: use rotationRate (deg/s) — much more responsive than
-// tracking absolute beta/gamma deltas which are noisy and lag-prone
-function handleDeviceMotion(e) {
-  if (!useGyro) return;
+function handleOrientation(e) {
+  const beta  = e.beta;
+  const gamma = e.gamma;
+  if (beta === null || gamma === null) return;
 
-  // rotationRate gives instantaneous angular velocity in deg/s
-  const rr = e.rotationRate;
-  if (rr) {
-    const alpha = rr.alpha ?? 0;  // rotation around z
-    const betaR = rr.beta  ?? 0;  // rotation around x
-    const gamma = rr.gamma ?? 0;  // rotation around y
-    const speed = Math.abs(betaR) * 0.7 + Math.abs(gamma) * 0.5 + Math.abs(alpha) * 0.2;
-    if (speed > 5) {  // deg/s threshold — ignore tiny tremors
-      bellows = Math.min(1, bellows + (speed / 300) * BELLOW_GYRO_SCALE);
-    }
+  if (!gyroActive) {
+    gyroActive = true;
+    useGyro    = true;
+    document.getElementById('status-badge').textContent = 'Gyro Active';
+    document.getElementById('status-badge').classList.add('active');
   }
 
-  // Also track absolute orientation for the bubble visualiser
-  const beta  = e.beta  ?? 0;
-  const gamma = e.gamma ?? 0;
-  const bx = Math.max(-1, Math.min(1, gamma / 45));
-  const by = Math.max(-1, Math.min(1, (beta - 45) / 45));
-  document.getElementById('gyro-bubble').style.transform =
-    `translate(calc(-50% + ${bx * 18}px), calc(-50% + ${by * 18}px))`;
-  document.getElementById('tilt-readout').textContent =
-    `tilt: ${beta.toFixed(1)}°  roll: ${gamma.toFixed(1)}°`;
-}
-
-function handleOrientation(e) {
-  if (!useGyro) return;
-  const beta  = e.beta  ?? 0;
-  const gamma = e.gamma ?? 0;
-
-  // Update bubble visualiser
-  const bx = Math.max(-1, Math.min(1, gamma / 45));
-  const by = Math.max(-1, Math.min(1, (beta - 45) / 45));
-  document.getElementById('gyro-bubble').style.transform =
-    `translate(calc(-50% + ${bx * 18}px), calc(-50% + ${by * 18}px))`;
-
-  document.getElementById('tilt-readout').textContent =
-    `tilt: ${beta.toFixed(1)}°  roll: ${gamma.toFixed(1)}°`;
-
+  // Delta-based pump feel (preferred)
   if (lastBeta !== null) {
     const db = Math.abs(beta  - lastBeta);
     const dg = Math.abs(gamma - lastGamma);
-    // Reject impossibly large jumps (device waking up, tab switch)
     if (db < 30 && dg < 30) {
       const motion = db * 0.9 + dg * 0.5;
-      if (motion > 0.2) {
-        bellows = Math.min(1, bellows + motion * 0.02 * BELLOW_GYRO_SCALE);
-      }
+      if (motion > 0.2) bellows = Math.min(1, bellows + motion * 0.02 * BELLOW_GYRO_SCALE);
     }
   }
-  lastBeta  = beta;
-  lastGamma = gamma;
+  lastBeta = beta; lastGamma = gamma;
+
+  // Bubble visualiser
+  const bx = Math.max(-1, Math.min(1, gamma / 45));
+  const by = Math.max(-1, Math.min(1, (beta - 45) / 45));
+  document.getElementById('gyro-bubble').style.transform =
+    `translate(calc(-50% + ${bx * 16}px), calc(-50% + ${by * 16}px))`;
+  document.getElementById('tilt-readout').textContent =
+    `tilt: ${beta.toFixed(1)}°  roll: ${gamma.toFixed(1)}°`;
 }
 
+function handleDeviceMotion(e) {
+  const rr = e.rotationRate;
+  if (rr) {
+    const speed = Math.abs(rr.beta ?? 0) * 0.7 + Math.abs(rr.gamma ?? 0) * 0.5 + Math.abs(rr.alpha ?? 0) * 0.2;
+    if (speed > 5) bellows = Math.min(1, bellows + (speed / 300) * BELLOW_GYRO_SCALE);
+  }
+  const beta = e.beta ?? 0, gamma = e.gamma ?? 0;
+  const bx = Math.max(-1, Math.min(1, gamma / 45));
+  const by = Math.max(-1, Math.min(1, (beta - 45) / 45));
+  document.getElementById('gyro-bubble').style.transform =
+    `translate(calc(-50% + ${bx * 16}px), calc(-50% + ${by * 16}px))`;
+  document.getElementById('tilt-readout').textContent =
+    `tilt: ${beta.toFixed(1)}°  roll: ${gamma.toFixed(1)}°`;
+}
+
+/* ─── PERMISSION REQUEST ─── */
 async function requestGyro() {
-  // ── iOS 13+ : DeviceMotionEvent.requestPermission() must be called
-  //              from a user gesture (already inside button click ✓)
-  if (typeof DeviceMotionEvent !== 'undefined' &&
-      typeof DeviceMotionEvent.requestPermission === 'function') {
-    try {
-      const perm = await DeviceMotionEvent.requestPermission();
-      if (perm === 'granted') {
-        window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
-        useGyro = true;
-        document.getElementById('tilt-readout').textContent = 'iOS motion: active';
-      } else {
-        document.getElementById('tilt-readout').textContent = 'Motion permission denied — use Space';
-      }
-      return;
-    } catch(e) {
-      console.warn('iOS motion permission error', e);
-      document.getElementById('tilt-readout').textContent = 'Motion error — use Space';
-      return;
-    }
-  }
+  const readout = document.getElementById('tilt-readout');
 
-  // ── Android Chrome 88+ : DeviceOrientationEvent.requestPermission() may exist
-  if (typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function') {
-    try {
-      const perm = await DeviceOrientationEvent.requestPermission();
-      if (perm === 'granted') {
-        window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-        useGyro = true;
-        document.getElementById('tilt-readout').textContent = 'Gyro: active';
-      } else {
-        document.getElementById('tilt-readout').textContent = 'Orientation denied — use Space';
-      }
-      return;
-    } catch(e) {
-      console.warn('Android orientation permission error', e);
-    }
-  }
-
-  // ── Other Android / non-iOS : no permission API, just attach and verify
-  //    we get real values (desktop fires the event too but with null values)
-  if (typeof DeviceOrientationEvent !== 'undefined') {
-    let verified = false;
-
-    const verify = (e) => {
-      // Real gyro sends non-null beta/gamma; desktop sends nulls or fixed zeros
-      if (e.beta !== null && e.gamma !== null &&
-          (Math.abs(e.beta) > 0.01 || Math.abs(e.gamma) > 0.01)) {
-        verified = true;
-        useGyro  = true;
-        document.getElementById('tilt-readout').textContent = 'Gyro: active';
-      }
-    };
-
-    window.addEventListener('deviceorientation', verify,       { passive: true, once: true });
+  // Detect Brave
+  const isBrave = !!(navigator.brave && await navigator.brave.isBrave().catch(() => false));
+  if (isBrave) {
+    document.getElementById('brave-notice').style.display = 'block';
+    readout.textContent = 'Brave detected — see instructions above';
     window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-
-    // After 1.5 s with no real values, tell user to use keyboard/space
-    setTimeout(() => {
-      if (!verified) {
-        document.getElementById('tilt-readout').textContent = 'No gyro detected — use Space / keyboard';
-      }
-    }, 1500);
-
+    setTimeout(() => { if (!gyroActive) readout.textContent = 'Enable Motion Sensors in Brave, or use Space'; }, 2000);
     return;
   }
 
-  // ── Fallback: no sensor API at all (desktop) ──
-  document.getElementById('tilt-readout').textContent = 'No gyro — use Space / keyboard';
+  // iOS 13+
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    readout.textContent = 'Requesting motion permission…';
+    try {
+      const perm = await DeviceMotionEvent.requestPermission();
+      if (perm === 'granted') {
+        window.addEventListener('devicemotion',      handleDeviceMotion, { passive: true });
+        window.addEventListener('deviceorientation', handleOrientation,  { passive: true });
+        useGyro = true;
+        readout.textContent = 'Tilt device to pump bellows';
+      } else {
+        readout.textContent = 'Motion denied — hold Space to pump';
+      }
+    } catch(err) {
+      readout.textContent = 'Motion error — hold Space to pump';
+    }
+    return;
+  }
+
+  // Android + others — no permission API, fires freely over HTTPS
+  if (typeof DeviceOrientationEvent !== 'undefined') {
+    readout.textContent = 'Connecting gyro…';
+    window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+    setTimeout(() => { if (!gyroActive) readout.textContent = 'No gyro — hold Space / keyboard to play'; }, 2000);
+    return;
+  }
+
+  readout.textContent = 'No gyro — hold Space / keyboard to play';
 }
 
 /* ─── KEYBOARD BUILDER ─── */
@@ -1074,7 +1236,26 @@ function buildKeyboard() {
       el.classList.add('pentatonic');
     }
     el.dataset.semitone = k.semitone;
-    el.innerHTML = `<div class="key-label">${k.note}<span class="kb">${k.kb}</span></div>`;
+
+    // ── Note name for bottom label ──
+    // For raga scales use the provided note name; for pentatonic/chromatic derive from semitone
+    let noteDisplay;
+    if (currentScale === 'bhairav' || currentScale === 'yaman') {
+      noteDisplay = k.note;
+    } else {
+      // Use the actual absolute note name from the semitone
+      const absName = noteName(k.semitone);
+      noteDisplay = noteHtml(absName);
+    }
+    // For raga scales also render sharps nicely
+    const noteLabel = (currentScale === 'bhairav' || currentScale === 'yaman')
+      ? k.note.replace('♯','<sup>♯</sup>').replace('♭','<sup>♭</sup>')
+      : noteDisplay;
+
+    el.innerHTML = `
+      <span class="key-kb">${k.kb}</span>
+      <span class="key-note">${noteLabel}</span>
+    `;
 
     el.addEventListener('pointerdown', e => {
       e.preventDefault();
@@ -1084,24 +1265,16 @@ function buildKeyboard() {
       spawnParticle(el);
       activePointers.set(e.pointerId, k.semitone);
     });
-
-    // pointerup = finger lifted cleanly on this key
     el.addEventListener('pointerup', e => {
       e.preventDefault();
       activePointers.delete(e.pointerId);
       if (playMode !== 'drone') stopNote(k.semitone);
     });
-
     el.addEventListener('pointercancel', e => {
       e.preventDefault();
       activePointers.delete(e.pointerId);
       if (playMode !== 'drone') stopNote(k.semitone);
     });
-
-    // lostpointercapture fires when the finger slides away from the captured element.
-    // This is the correct event for "finger left this key's zone" on touch.
-    // Sustain mode: note stops when finger leaves key (real harmonium key behaviour).
-    // Drone mode: note holds indefinitely regardless.
     el.addEventListener('lostpointercapture', e => {
       if (activePointers.has(e.pointerId)) {
         activePointers.delete(e.pointerId);
@@ -1113,36 +1286,27 @@ function buildKeyboard() {
   });
 }
 
-/* ─── KEYBOARD INPUT ─── */
+/* ─── KB MAP ─── */
 const kbMap = {};
 function buildKbMap() {
   Object.keys(kbMap).forEach(k => delete kbMap[k]);
-  SCALES[currentScale].keys.forEach(k => {
-    kbMap[k.kb.toLowerCase()] = k.semitone;
-  });
+  SCALES[currentScale].keys.forEach(k => { kbMap[k.kb.toLowerCase()] = k.semitone; });
 }
 
 window.addEventListener('keydown', e => {
   if (e.repeat) return;
   const key = e.key.toLowerCase();
-
-  // Space = manual bellows pump
   if (key === ' ') { initAudio(); bellowsPumpActive = true; return; }
-
   if (kbMap[key] !== undefined) {
     initAudio();
     startNote(kbMap[key]);
     spawnParticle(document.querySelector(`[data-semitone="${kbMap[key]}"]`));
   }
 });
-
 window.addEventListener('keyup', e => {
   const key = e.key.toLowerCase();
   if (key === ' ') { bellowsPumpActive = false; return; }
-  if (kbMap[key] !== undefined) {
-    // Drone = hold forever; all other modes release on keyup
-    if (playMode !== 'drone') stopNote(kbMap[key]);
-  }
+  if (kbMap[key] !== undefined && playMode !== 'drone') stopNote(kbMap[key]);
 });
 
 /* ─── PARTICLES ─── */
@@ -1164,15 +1328,32 @@ document.getElementById('oct-up').addEventListener('click', () => {
 document.getElementById('oct-dn').addEventListener('click', () => {
   if (octave > 2) { octave--; document.getElementById('octave-val').textContent = octave; stopAllNotes(); }
 });
-
 document.querySelectorAll('.scale-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentScale = btn.dataset.scale;
+    stopAllNotes(); buildKeyboard(); buildKbMap();
+  });
+});
+/* ─── REED STOP TOGGLES ─── */
+document.querySelectorAll('.stop-knob').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const reed = btn.dataset.reed;
+    if (activeReeds.has(reed)) {
+      // Don't allow all stops to be pulled in — at least one must stay active
+      if (activeReeds.size > 1) {
+        activeReeds.delete(reed);
+        btn.classList.remove('active');
+      }
+    } else {
+      activeReeds.add(reed);
+      btn.classList.add('active');
+    }
+    // Restart any currently-playing notes so new reed config takes effect
+    const playing = Object.keys(activeOscs).map(k => activeOscs[k]?.semitone).filter(s => s !== undefined);
     stopAllNotes();
-    buildKeyboard();
-    buildKbMap();
+    playing.forEach(s => startNote(s));
   });
 });
 
@@ -1183,8 +1364,6 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
     playMode = btn.dataset.mode;
   });
 });
-
-/* Manual pump button */
 const manualBtn = document.getElementById('bellow-manual-btn');
 manualBtn.addEventListener('pointerdown', () => { initAudio(); bellowsPumpActive = true; });
 manualBtn.addEventListener('pointerup',   () => { bellowsPumpActive = false; });
@@ -1195,21 +1374,11 @@ document.getElementById('start-btn').addEventListener('click', async () => {
   initAudio();
   await requestGyro();
   document.getElementById('gyro-overlay').classList.add('hidden');
-  document.getElementById('status-badge').textContent = useGyro
-    ? 'Gyro Active' : 'Keyboard Mode';
-  document.getElementById('status-badge').classList.add('active');
-
-  // Show loading state while samples fetch
   const badge = document.getElementById('status-badge');
   badge.textContent = 'Loading samples…';
-  // Samples preload in background; update badge once first batch ready
-  Promise.allSettled(
-    [48, 51, 53, 55, 56, 65, 67].map(m =>
-      sampleCache[m] ? Promise.resolve() : loadQueue[m] || Promise.resolve()
-    )
-  ).then(() => {
-    badge.textContent = useGyro ? 'Gyro Active' : 'Keyboard Mode';
-  });
+  badge.classList.add('active');
+  Promise.allSettled([48,51,53,55,56,65,67].map(m => loadQueue[m] || Promise.resolve()))
+    .then(() => { badge.textContent = useGyro ? 'Gyro Active' : 'Keyboard Mode'; });
 });
 
 /* ─── INIT ─── */
@@ -1219,12 +1388,10 @@ buildKbMap();
 /* ─── SERVICE WORKER ─── */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    // Derive the base path dynamically — works on GitHub Pages sub-paths
-    // e.g. /Gyro-Harmonium/ as well as a root deployment /
     const swUrl = new URL('./sw.js', document.baseURI).href;
     navigator.serviceWorker.register(swUrl, { scope: './' })
-      .then(reg => console.log('SW registered, scope:', reg.scope))
-      .catch(e => console.warn('SW registration failed:', e));
+      .then(reg => console.log('SW:', reg.scope))
+      .catch(e  => console.warn('SW failed:', e));
   });
 }
 </script>
