@@ -6,10 +6,9 @@
   <meta name="theme-color" content="#1a0d06" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="G-Harmonium" />
-  <title>G-Harmonium</title>
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <meta name="apple-mobile-web-app-title" content="Harmonium" />
+  <title>Harmonium</title>
+  <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
 
@@ -589,7 +588,7 @@
   <h2>Tap to Awaken</h2>
   <p>This harmonium uses your device's gyroscope to control the bellows. Tilt or rock the device to pump air — just like a real harmonium.</p>
   <button class="big-btn" id="start-btn">Begin Playing</button>
-  <p style="font-size:.62rem;opacity:.4;">On iOS, a system permission prompt will appear. On Android, gyro activates automatically. On desktop, hold Space to pump.</p>
+  <p style="font-size:.62rem;opacity:.4;">On iOS, permission is required to access motion sensors.</p>
 </div>
 
 <script>
@@ -669,7 +668,6 @@ const SCALES = {
 let audioCtx = null, masterGain = null;
 let bellows = 0, lastBeta = null, lastGamma = null;
 let activeOscs = {};
-const activePointers = new Map(); // pointerId → semitone
 let octave = 4;
 let currentScale = 'pentatonic';
 let playMode = 'sustain';
@@ -685,230 +683,84 @@ function noteFreq(semitone, oct) {
   return midiToFreq(60 + semitone + (oct - 4) * 12);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   REAL SAMPLE ENGINE
-   ─────────────────────────────────────────────────────────
-   Samples: CC0 (public domain) harmonium recordings by
-     donyaquick (Yale Euterpea Studio) + cabled_mess (trimmed)
-     https://freesound.org/people/donyaquick/sounds/330410/
-     https://freesound.org/people/cabled_mess/packs/29512/
-
-   Architecture:
-     • Sparse sample set: one recorded note every ~3 semitones
-     • Pitch-shifted via AudioBufferSourceNode.playbackRate
-       for notes between samples (never more than ±2 semitones
-       of shift — inaudible on harmonium's stable reed timbre)
-     • Per-note lowpass filter: bellows → filter cutoff
-       (maps air pressure to timbral brightness, just like
-       physically pushing more air past the reeds)
-     • Synthetic room reverb IR (exponential noise decay)
-     • Samples loaded lazily and cached in sampleCache[]
-   ═══════════════════════════════════════════════════════════ */
-
-// Freesound CDN pattern: https://freesound.org/data/previews/{id//100}/{id}_hq.mp3
-// These are the CC0 samples from cabled_mess pack 29512.
-// IDs sourced from: https://freesound.org/people/cabled_mess/packs/29512/
-// noteId = MIDI note number (C3=48, C4=60, etc.)
-// We use the HQ preview MP3s (no login required, publicly accessible).
-const SAMPLE_MAP = {
-  // MIDI: freesound ID     (note)
-  48:  523878,  // C3
-  51:  523880,  // D#3 / Eb3
-  53:  523882,  // F3
-  55:  523888,  // G3
-  56:  523887,  // G#3
-  60:  null,    // C4 — will derive from C3 + 12 semitones shift
-  62:  null,    // D4
-  65:  523885,  // F4
-  67:  523881,  // G4
-  68:  523886,  // G#4
-  43:  523889,  // G2
-  44:  523884,  // G#2
-  41:  523883,  // F2
-};
-
-// Nearest recorded note for any MIDI pitch
-function nearestSample(midi) {
-  const keys = Object.keys(SAMPLE_MAP).map(Number).filter(k => SAMPLE_MAP[k] !== null);
-  return keys.reduce((best, k) => Math.abs(k - midi) < Math.abs(best - midi) ? k : best);
-}
-
-const sampleCache = {};   // midi → AudioBuffer
-const loadQueue   = {};   // midi → Promise
-
-function freesoundPreviewUrl(id) {
-  const dir = Math.floor(id / 1000);
-  return `https://freesound.org/data/previews/${dir}/${id}_hq.mp3`;
-}
-
-async function loadSample(midiRoot) {
-  if (sampleCache[midiRoot]) return sampleCache[midiRoot];
-  if (loadQueue[midiRoot])   return loadQueue[midiRoot];
-
-  const id  = SAMPLE_MAP[midiRoot];
-  if (!id) return null;
-  const url = freesoundPreviewUrl(id);
-
-  loadQueue[midiRoot] = fetch(url)
-    .then(r => r.arrayBuffer())
-    .then(ab => audioCtx.decodeAudioData(ab))
-    .then(buf => { sampleCache[midiRoot] = buf; return buf; })
-    .catch(err => { console.warn('Sample load failed', midiRoot, err); return null; });
-
-  return loadQueue[midiRoot];
-}
-
-// Preload the most-used samples in the background after audio init
-function preloadCoreSamples() {
-  [48, 51, 53, 55, 56, 65, 67, 68, 43, 41].forEach(m => loadSample(m));
-}
-
-/* ─── REVERB (woody room impulse) ─── */
-let reverbNode = null, reverbGainNode = null;
-function buildReverb(ctx) {
-  if (reverbNode) return;
-  // Asymmetric stereo noise decay — sounds more like a room than pink noise
-  const sr  = ctx.sampleRate;
-  const len = sr * 1.1;
-  const buf = ctx.createBuffer(2, len, sr);
-  for (let ch = 0; ch < 2; ch++) {
-    const d = buf.getChannelData(ch);
-    for (let i = 0; i < len; i++) {
-      const t = i / len;
-      // Early reflections (0–80ms) + late diffuse tail
-      const early = i < sr * 0.08 ? 0.4 * (Math.random() * 2 - 1) : 0;
-      const late  = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.2) * 0.6;
-      d[i] = early + late;
-    }
-  }
-  reverbNode = ctx.createConvolver();
-  reverbNode.buffer = buf;
-  reverbGainNode = ctx.createGain();
-  reverbGainNode.gain.value = 0.22;
-  reverbNode.connect(reverbGainNode);
-  reverbGainNode.connect(masterGain);
-}
-
 /* ─── AUDIO INIT ─── */
 function initAudio() {
   if (audioCtx) { if (audioCtx.state === 'suspended') audioCtx.resume(); return; }
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   masterGain = audioCtx.createGain();
   masterGain.gain.value = 0;
+  // Slight reverb-like effect via convolver would be ideal; use gain for now
   masterGain.connect(audioCtx.destination);
-  buildReverb(audioCtx);
-  preloadCoreSamples();
 }
 
-/* ─── BELLOWS → FILTER ─── */
-let filterNodes = {};
-function updateFilterCutoffs() {
-  if (!audioCtx) return;
-  // Logarithmic mapping: low bellows = warm & muffled, full bellows = bright & cutting
-  const minF = 600, maxF = 5000;
-  const cutoff = minF * Math.pow(maxF / minF, Math.max(0.02, bellows));
-  Object.values(filterNodes).forEach(f => {
-    f.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.06);
-  });
-}
-
-/* ─── START NOTE (sample playback) ─── */
+/* ─── HARMONIUM SOUND ─── */
 function startNote(semitone) {
   if (!audioCtx) return;
   const key = `s${semitone}`;
   if (activeOscs[key]) return;
 
-  const targetMidi  = 60 + semitone + (octave - 4) * 12;
-  const rootMidi    = nearestSample(targetMidi);
-  const semitonesDiff = targetMidi - rootMidi;
-  // playbackRate shift: 2^(n/12)
-  const rate = Math.pow(2, semitonesDiff / 12);
+  const freq = noteFreq(semitone, octave);
 
-  // Mark as active immediately so repeated taps don't double-trigger
-  activeOscs[key] = { nodes: [], semitone, pending: true };
+  // Three oscillators for reed-like timbre
+  const oscs = [];
+  const gains = [];
 
+  const partials = [
+    { type:'sawtooth', detune:0,    vol:0.40 },
+    { type:'square',   detune:+1.2, vol:0.22 },
+    { type:'sawtooth', detune:-0.8, vol:0.18 },
+  ];
+
+  partials.forEach(p => {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = p.type;
+    o.frequency.value = freq;
+    o.detune.value = p.detune * 10;
+    g.gain.value = p.vol;
+
+    // Attack envelope
+    g.gain.setValueAtTime(0, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(p.vol, audioCtx.currentTime + 0.04);
+
+    o.connect(g);
+    g.connect(masterGain);
+    o.start();
+    oscs.push(o); gains.push(g);
+  });
+
+  activeOscs[key] = { oscs, gains, semitone };
+
+  // Visual
   const el = document.querySelector(`[data-semitone="${semitone}"]`);
   if (el) el.classList.add('pressed');
 
-  loadSample(rootMidi).then(buffer => {
-    // Note may have been released while loading
-    if (!activeOscs[key]) return;
-
-    const t = audioCtx.currentTime;
-
-    // Per-note filter
-    const filt = audioCtx.createBiquadFilter();
-    filt.type = 'lowpass';
-    filt.Q.value = 1.2;
-    const minF = 600, maxF = 5000;
-    filt.frequency.value = minF * Math.pow(maxF / minF, Math.max(0.02, bellows));
-    filt.connect(reverbNode);   // wet send
-    filt.connect(masterGain);   // dry
-    filterNodes[key] = filt;
-
-    // Gain envelope
-    const envGain = audioCtx.createGain();
-    envGain.gain.setValueAtTime(0, t);
-    envGain.gain.linearRampToValueAtTime(0.001, t + 0.008);
-    envGain.gain.exponentialRampToValueAtTime(0.85, t + 0.06); // reed attack
-    envGain.connect(filt);
-
-    if (!buffer) {
-      // Fallback: simple oscillator if sample failed to load
-      const osc = audioCtx.createOscillator();
-      osc.type = 'sawtooth';
-      osc.frequency.value = 440 * Math.pow(2, (targetMidi - 69) / 12);
-      osc.connect(envGain);
-      osc.start(t);
-      activeOscs[key] = { nodes: [osc, envGain, filt], semitone, envGain };
-    } else {
-      // Real sample: loop the sustain portion
-      const src = audioCtx.createBufferSource();
-      src.buffer = buffer;
-      src.playbackRate.value = rate;
-      // Loop from 20% into buffer to end — avoids attack click on loop
-      src.loop = true;
-      src.loopStart = buffer.duration * 0.18;
-      src.loopEnd   = buffer.duration * 0.92;
-      src.connect(envGain);
-      src.start(t);
-      activeOscs[key] = { nodes: [src, envGain, filt], semitone, envGain, src };
-    }
-
-    if (playMode === 'staccato') setTimeout(() => stopNote(semitone), 200);
-  });
+  if (playMode === 'staccato') {
+    setTimeout(() => stopNote(semitone), 180);
+  }
 }
 
-/* ─── STOP NOTE ─── */
 function stopNote(semitone) {
   const key = `s${semitone}`;
   if (!activeOscs[key]) return;
-  const { nodes, envGain, src } = activeOscs[key];
+  const { oscs, gains } = activeOscs[key];
+  const t = audioCtx.currentTime;
+  gains.forEach(g => {
+    g.gain.cancelScheduledValues(t);
+    g.gain.setValueAtTime(g.gain.value, t);
+    g.gain.linearRampToValueAtTime(0, t + 0.15);
+  });
+  oscs.forEach(o => o.stop(t + 0.18));
   delete activeOscs[key];
 
   const el = document.querySelector(`[data-semitone="${semitone}"]`);
   if (el) el.classList.remove('pressed');
-
-  if (!envGain) return; // still pending load — just cleared activeOscs above
-
-  const t = audioCtx.currentTime;
-  envGain.gain.cancelScheduledValues(t);
-  envGain.gain.setValueAtTime(envGain.gain.value, t);
-  envGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); // natural reed stop
-
-  if (src) src.stop(t + 0.22);
-
-  setTimeout(() => {
-    nodes.forEach(n => { try { n.disconnect(); } catch(_){} });
-    const fk = filterNodes[key];
-    if (fk) { try { fk.disconnect(); } catch(_){} delete filterNodes[key]; }
-  }, 350);
 }
 
 function stopAllNotes() {
-  [...Object.keys(activeOscs)].forEach(k => {
-    const sem = activeOscs[k]?.semitone;
-    if (sem !== undefined) stopNote(sem);
+  Object.keys(activeOscs).forEach(k => {
+    const sem = activeOscs[k].semitone;
+    stopNote(sem);
   });
 }
 
@@ -926,62 +778,56 @@ setInterval(() => {
   document.getElementById('bellows-fill').style.width = (bellows * 100) + '%';
   if (masterGain) {
     masterGain.gain.setTargetAtTime(bellows * 0.9, audioCtx.currentTime, 0.04);
-    updateFilterCutoffs();
   }
 }, 40);
 
 /* ─── GYROSCOPE ─── */
-// iOS DeviceMotion: use rotationRate (deg/s) — much more responsive than
-// tracking absolute beta/gamma deltas which are noisy and lag-prone
 function handleDeviceMotion(e) {
   if (!useGyro) return;
+  const beta  = e.beta  || 0;  // front-back tilt
+  const gamma = e.gamma || 0;  // left-right tilt
 
-  // rotationRate gives instantaneous angular velocity in deg/s
-  const rr = e.rotationRate;
-  if (rr) {
-    const alpha = rr.alpha ?? 0;  // rotation around z
-    const betaR = rr.beta  ?? 0;  // rotation around x
-    const gamma = rr.gamma ?? 0;  // rotation around y
-    const speed = Math.abs(betaR) * 0.7 + Math.abs(gamma) * 0.5 + Math.abs(alpha) * 0.2;
-    if (speed > 5) {  // deg/s threshold — ignore tiny tremors
-      bellows = Math.min(1, bellows + (speed / 300) * BELLOW_GYRO_SCALE);
-    }
-  }
-
-  // Also track absolute orientation for the bubble visualiser
-  const beta  = e.beta  ?? 0;
-  const gamma = e.gamma ?? 0;
-  const bx = Math.max(-1, Math.min(1, gamma / 45));
-  const by = Math.max(-1, Math.min(1, (beta - 45) / 45));
-  document.getElementById('gyro-bubble').style.transform =
-    `translate(calc(-50% + ${bx * 18}px), calc(-50% + ${by * 18}px))`;
-  document.getElementById('tilt-readout').textContent =
-    `tilt: ${beta.toFixed(1)}°  roll: ${gamma.toFixed(1)}°`;
-}
-
-function handleOrientation(e) {
-  if (!useGyro) return;
-  const beta  = e.beta  ?? 0;
-  const gamma = e.gamma ?? 0;
-
-  // Update bubble visualiser
-  const bx = Math.max(-1, Math.min(1, gamma / 45));
-  const by = Math.max(-1, Math.min(1, (beta - 45) / 45));
+  // Update bubble position
+  const bx = Math.max(-1, Math.min(1, gamma / 40));
+  const by = Math.max(-1, Math.min(1, (beta - 45) / 40));
   document.getElementById('gyro-bubble').style.transform =
     `translate(calc(-50% + ${bx * 18}px), calc(-50% + ${by * 18}px))`;
 
   document.getElementById('tilt-readout').textContent =
-    `tilt: ${beta.toFixed(1)}°  roll: ${gamma.toFixed(1)}°`;
+    `tilt: ${beta.toFixed(1)}° | roll: ${gamma.toFixed(1)}°`;
 
   if (lastBeta !== null) {
     const db = Math.abs(beta  - lastBeta);
     const dg = Math.abs(gamma - lastGamma);
-    // Reject impossibly large jumps (device waking up, tab switch)
-    if (db < 30 && dg < 30) {
-      const motion = db * 0.9 + dg * 0.5;
-      if (motion > 0.2) {
-        bellows = Math.min(1, bellows + motion * 0.02 * BELLOW_GYRO_SCALE);
-      }
+    const motion = db + dg * 0.5;
+    if (motion > 0.4) {
+      bellows = Math.min(1, bellows + motion * 0.015 * BELLOW_GYRO_SCALE);
+    }
+  }
+  lastBeta  = beta;
+  lastGamma = gamma;
+}
+
+/* Alternative: deviceorientation (beta = forward tilt) */
+function handleOrientation(e) {
+  if (!useGyro) return;
+  const beta  = e.beta  || 0;
+  const gamma = e.gamma || 0;
+
+  const bx = Math.max(-1, Math.min(1, gamma / 40));
+  const by = Math.max(-1, Math.min(1, (beta - 45) / 40));
+  document.getElementById('gyro-bubble').style.transform =
+    `translate(calc(-50% + ${bx * 18}px), calc(-50% + ${by * 18}px))`;
+
+  document.getElementById('tilt-readout').textContent =
+    `tilt: ${beta.toFixed(1)}° | roll: ${gamma.toFixed(1)}°`;
+
+  if (lastBeta !== null) {
+    const db = Math.abs(beta  - lastBeta);
+    const dg = Math.abs(gamma - lastGamma);
+    const motion = db * 0.8 + dg * 0.4;
+    if (motion > 0.3) {
+      bellows = Math.min(1, bellows + motion * 0.012 * BELLOW_GYRO_SCALE);
     }
   }
   lastBeta  = beta;
@@ -989,75 +835,19 @@ function handleOrientation(e) {
 }
 
 async function requestGyro() {
-  // ── iOS 13+ : DeviceMotionEvent.requestPermission() must be called
-  //              from a user gesture (already inside button click ✓)
   if (typeof DeviceMotionEvent !== 'undefined' &&
       typeof DeviceMotionEvent.requestPermission === 'function') {
     try {
       const perm = await DeviceMotionEvent.requestPermission();
       if (perm === 'granted') {
-        window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
-        useGyro = true;
-        document.getElementById('tilt-readout').textContent = 'iOS motion: active';
-      } else {
-        document.getElementById('tilt-readout').textContent = 'Motion permission denied — use Space';
+        window.addEventListener('devicemotion', handleDeviceMotion);
+        useGyro = true; gyroGranted = true;
       }
-      return;
-    } catch(e) {
-      console.warn('iOS motion permission error', e);
-      document.getElementById('tilt-readout').textContent = 'Motion error — use Space';
-      return;
-    }
+    } catch(e) { console.warn('Motion permission denied', e); }
+  } else if (typeof DeviceOrientationEvent !== 'undefined') {
+    window.addEventListener('deviceorientation', handleOrientation);
+    useGyro = true; gyroGranted = true;
   }
-
-  // ── Android Chrome 88+ : DeviceOrientationEvent.requestPermission() may exist
-  if (typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function') {
-    try {
-      const perm = await DeviceOrientationEvent.requestPermission();
-      if (perm === 'granted') {
-        window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-        useGyro = true;
-        document.getElementById('tilt-readout').textContent = 'Gyro: active';
-      } else {
-        document.getElementById('tilt-readout').textContent = 'Orientation denied — use Space';
-      }
-      return;
-    } catch(e) {
-      console.warn('Android orientation permission error', e);
-    }
-  }
-
-  // ── Other Android / non-iOS : no permission API, just attach and verify
-  //    we get real values (desktop fires the event too but with null values)
-  if (typeof DeviceOrientationEvent !== 'undefined') {
-    let verified = false;
-
-    const verify = (e) => {
-      // Real gyro sends non-null beta/gamma; desktop sends nulls or fixed zeros
-      if (e.beta !== null && e.gamma !== null &&
-          (Math.abs(e.beta) > 0.01 || Math.abs(e.gamma) > 0.01)) {
-        verified = true;
-        useGyro  = true;
-        document.getElementById('tilt-readout').textContent = 'Gyro: active';
-      }
-    };
-
-    window.addEventListener('deviceorientation', verify,       { passive: true, once: true });
-    window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-
-    // After 1.5 s with no real values, tell user to use keyboard/space
-    setTimeout(() => {
-      if (!verified) {
-        document.getElementById('tilt-readout').textContent = 'No gyro detected — use Space / keyboard';
-      }
-    }, 1500);
-
-    return;
-  }
-
-  // ── Fallback: no sensor API at all (desktop) ──
-  document.getElementById('tilt-readout').textContent = 'No gyro — use Space / keyboard';
 }
 
 /* ─── KEYBOARD BUILDER ─── */
@@ -1076,38 +866,12 @@ function buildKeyboard() {
     el.dataset.semitone = k.semitone;
     el.innerHTML = `<div class="key-label">${k.note}<span class="kb">${k.kb}</span></div>`;
 
-    el.addEventListener('pointerdown', e => {
-      e.preventDefault();
-      el.setPointerCapture(e.pointerId);
-      initAudio();
-      startNote(k.semitone);
-      spawnParticle(el);
-      activePointers.set(e.pointerId, k.semitone);
-    });
+    const press   = () => { initAudio(); startNote(k.semitone); spawnParticle(el); };
+    const release = () => { if (playMode !== 'sustain' && playMode !== 'drone') stopNote(k.semitone); };
 
-    // pointerup = finger lifted cleanly on this key
-    el.addEventListener('pointerup', e => {
-      e.preventDefault();
-      activePointers.delete(e.pointerId);
-      if (playMode !== 'drone') stopNote(k.semitone);
-    });
-
-    el.addEventListener('pointercancel', e => {
-      e.preventDefault();
-      activePointers.delete(e.pointerId);
-      if (playMode !== 'drone') stopNote(k.semitone);
-    });
-
-    // lostpointercapture fires when the finger slides away from the captured element.
-    // This is the correct event for "finger left this key's zone" on touch.
-    // Sustain mode: note stops when finger leaves key (real harmonium key behaviour).
-    // Drone mode: note holds indefinitely regardless.
-    el.addEventListener('lostpointercapture', e => {
-      if (activePointers.has(e.pointerId)) {
-        activePointers.delete(e.pointerId);
-        if (playMode !== 'drone') stopNote(k.semitone);
-      }
-    });
+    el.addEventListener('pointerdown', e => { e.preventDefault(); press(); });
+    el.addEventListener('pointerup',   e => { e.preventDefault(); release(); });
+    el.addEventListener('pointerleave',e => { e.preventDefault(); release(); });
 
     piano.appendChild(el);
   });
@@ -1140,8 +904,7 @@ window.addEventListener('keyup', e => {
   const key = e.key.toLowerCase();
   if (key === ' ') { bellowsPumpActive = false; return; }
   if (kbMap[key] !== undefined) {
-    // Drone = hold forever; all other modes release on keyup
-    if (playMode !== 'drone') stopNote(kbMap[key]);
+    if (playMode !== 'sustain' && playMode !== 'drone') stopNote(kbMap[key]);
   }
 });
 
@@ -1198,35 +961,11 @@ document.getElementById('start-btn').addEventListener('click', async () => {
   document.getElementById('status-badge').textContent = useGyro
     ? 'Gyro Active' : 'Keyboard Mode';
   document.getElementById('status-badge').classList.add('active');
-
-  // Show loading state while samples fetch
-  const badge = document.getElementById('status-badge');
-  badge.textContent = 'Loading samples…';
-  // Samples preload in background; update badge once first batch ready
-  Promise.allSettled(
-    [48, 51, 53, 55, 56, 65, 67].map(m =>
-      sampleCache[m] ? Promise.resolve() : loadQueue[m] || Promise.resolve()
-    )
-  ).then(() => {
-    badge.textContent = useGyro ? 'Gyro Active' : 'Keyboard Mode';
-  });
 });
 
 /* ─── INIT ─── */
 buildKeyboard();
 buildKbMap();
-
-/* ─── SERVICE WORKER ─── */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    // Derive the base path dynamically — works on GitHub Pages sub-paths
-    // e.g. /Gyro-Harmonium/ as well as a root deployment /
-    const swUrl = new URL('./sw.js', document.baseURI).href;
-    navigator.serviceWorker.register(swUrl, { scope: './' })
-      .then(reg => console.log('SW registered, scope:', reg.scope))
-      .catch(e => console.warn('SW registration failed:', e));
-  });
-}
 </script>
 </body>
 </html>
