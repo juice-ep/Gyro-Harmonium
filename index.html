@@ -6,10 +6,9 @@
   <meta name="theme-color" content="#1a0d06" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="G-Harmonium" />
-  <title>G-Harmonium</title>
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <meta name="apple-mobile-web-app-title" content="Harmonium" />
+  <title>Harmonium</title>
+  <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
 
@@ -995,9 +994,8 @@ function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   masterGain = audioCtx.createGain();
   masterGain.gain.value = 0;
+  // Slight reverb-like effect via convolver would be ideal; use gain for now
   masterGain.connect(audioCtx.destination);
-  buildReverb(audioCtx);
-  preloadCoreSamples();
 }
 
 /* ─── FILTER ─── */
@@ -1086,11 +1084,17 @@ function startNote(semitone) {
   });
 }
 
-/* ─── STOP NOTE ─── */
 function stopNote(semitone) {
   const key = `s${semitone}`;
   if (!activeOscs[key]) return;
-  const { nodes, envGain, src } = activeOscs[key];
+  const { oscs, gains } = activeOscs[key];
+  const t = audioCtx.currentTime;
+  gains.forEach(g => {
+    g.gain.cancelScheduledValues(t);
+    g.gain.setValueAtTime(g.gain.value, t);
+    g.gain.linearRampToValueAtTime(0, t + 0.15);
+  });
+  oscs.forEach(o => o.stop(t + 0.18));
   delete activeOscs[key];
   const el = document.querySelector(`[data-semitone="${semitone}"]`);
   if (el) el.classList.remove('pressed');
@@ -1108,9 +1112,9 @@ function stopNote(semitone) {
 }
 
 function stopAllNotes() {
-  [...Object.keys(activeOscs)].forEach(k => {
-    const sem = activeOscs[k]?.semitone;
-    if (sem !== undefined) stopNote(sem);
+  Object.keys(activeOscs).forEach(k => {
+    const sem = activeOscs[k].semitone;
+    stopNote(sem);
   });
 }
 
@@ -1126,7 +1130,6 @@ setInterval(() => {
   document.getElementById('bellows-fill').style.width = (bellows * 100) + '%';
   if (masterGain) {
     masterGain.gain.setTargetAtTime(bellows * 0.9, audioCtx.currentTime, 0.04);
-    updateFilterCutoffs();
   }
 }, 40);
 
@@ -1160,7 +1163,18 @@ function handleOrientation(e) {
   document.getElementById('gyro-bubble').style.transform =
     `translate(calc(-50% + ${bx * 16}px), calc(-50% + ${by * 16}px))`;
   document.getElementById('tilt-readout').textContent =
-    `tilt: ${beta.toFixed(1)}°  roll: ${gamma.toFixed(1)}°`;
+    `tilt: ${beta.toFixed(1)}° | roll: ${gamma.toFixed(1)}°`;
+
+  if (lastBeta !== null) {
+    const db = Math.abs(beta  - lastBeta);
+    const dg = Math.abs(gamma - lastGamma);
+    const motion = db + dg * 0.5;
+    if (motion > 0.4) {
+      bellows = Math.min(1, bellows + motion * 0.015 * BELLOW_GYRO_SCALE);
+    }
+  }
+  lastBeta  = beta;
+  lastGamma = gamma;
 }
 
 function handleDeviceMotion(e) {
