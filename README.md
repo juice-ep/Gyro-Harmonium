@@ -5,6 +5,7 @@ A gyroscope-powered harmonium built on Gajraj Mohini's iHarmonium project — ex
 ---
 
 **▶ 🎹 Play now!**
+
 [juice-ep.github.io/Gyro-Harmonium](https://juice-ep.github.io/Gyro-Harmonium/)
 
 ---
@@ -50,16 +51,24 @@ At least one stop must stay active. Multiple stops layer simultaneously.
 
 ## Key mapping
 
-```
-Q  W  E  │  A  S  D  F  G  H  J  K  │  L  ;  Z
-          │  1  2  3  4  5  6  7  8  │
-          ↑ tonic                    ↑ octave
-```
-C major: `G A B │ C D E F G A B C │ D E F`
+**Diatonic (14 keys)**
 
-Chromatic — white keys: `A S D F G H J K L ; Z` · black keys: `W E R T Y U I O`
+```
+Keys:   Q  W  E  │  A  S  D  F  G  H  J  K  │  L  ;  Z
+C maj:  G  A  B  │  C  D  E  F  G  A  B  C  │  D  E  F
+                 ↑ tonic                     ↑ octave
+```
 
-Octave shift: − / + buttons on screen (range: 2–6).
+**Chromatic (19 keys)**
+
+```
+White:  A  S  D  F  G  H  J  K  L  ;  Z
+Black:  W  E  R  T  Y  U  I  O
+```
+
+**Octave shift** — `−` / `+` on screen · range 2–6
+
+**Play modes** — Sustain (held) · Staccato (auto-cut 200ms) · Drone (holds indefinitely)
 
 **Play modes:** Sustain (held) · Staccato (auto-cut 200ms) · Drone (holds indefinitely)
 
