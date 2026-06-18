@@ -814,6 +814,7 @@
         <button class="scale-btn" data-scale="full">Chromatic</button>
         <button class="scale-btn" data-scale="bhairav">Bhairav</button>
         <button class="scale-btn" data-scale="yaman">Yaman</button>
+        <button class="scale-btn" data-scale="athana">Athana</button>
       </div>
       <!-- Pentatonic root + mode selector — only shown when pentatonic scale active -->
       <div id="penta-root-row">
@@ -1057,6 +1058,23 @@ const SCALES = {
       { note:'Dha', type:'white', kb:'G', semitone:9  },
       { note:'Ni',  type:'white', kb:'H', semitone:11 },
       { note:'Sa\'',type:'white', kb:'J', semitone:12 },
+    ],
+    pentatonicIndices: [0,1,2,3,4,5,6,7],
+  },
+  athana: {
+    name: 'Athana — Late Night Raga',
+    // Hindustani Adana (Asavari thaat) — Sa Re ga Ma Pa dha ni Sa
+    // Komal: ga (flat 3rd), dha (flat 6th), ni (flat 7th)
+    // Deep, contemplative; associated with late night / midnight
+    keys: [
+      { note:'Sa',  type:'white', kb:'A', semitone:0  },
+      { note:'Re',  type:'white', kb:'S', semitone:2  },
+      { note:'ga',  type:'black', kb:'E', semitone:3  },
+      { note:'Ma',  type:'white', kb:'D', semitone:5  },
+      { note:'Pa',  type:'white', kb:'F', semitone:7  },
+      { note:'dha', type:'black', kb:'R', semitone:8  },
+      { note:'ni',  type:'black', kb:'T', semitone:10 },
+      { note:"Sa'", type:'white', kb:'G', semitone:12 },
     ],
     pentatonicIndices: [0,1,2,3,4,5,6,7],
   },
