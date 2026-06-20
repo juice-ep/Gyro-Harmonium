@@ -1099,7 +1099,7 @@ const REED_CONFIG = {
   coupler: { semitoneOffset: +12, vol: 0.50 },
 };
 
-let audioCtx = null, masterGain = null;
+let audioCtx = null, masterGain = null, limiterNode = null;
 let bellows = 0, lastBeta = null, lastGamma = null;
 let activeOscs = {};
 const activePointers = new Map();
@@ -1178,7 +1178,20 @@ function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   masterGain = audioCtx.createGain();
   masterGain.gain.value = 0;
-  masterGain.connect(audioCtx.destination);
+
+  // Safety limiter — catches summed gain overflow from stacked reed stops
+  // or held chords before it hits hard digital clipping (sounds like
+  // crackling / over-amplification otherwise).
+  limiterNode = audioCtx.createDynamicsCompressor();
+  limiterNode.threshold.value = -6;   // start gently limiting at −6dB
+  limiterNode.knee.value      = 12;   // soft knee — transparent until needed
+  limiterNode.ratio.value     = 12;   // fairly hard ratio above threshold
+  limiterNode.attack.value    = 0.003;
+  limiterNode.release.value   = 0.15;
+
+  masterGain.connect(limiterNode);
+  limiterNode.connect(audioCtx.destination);
+
   buildReverb(audioCtx);
   preloadCoreSamples();
 }
@@ -1192,35 +1205,53 @@ function updateFilterCutoffs() {
   Object.values(filterNodes).forEach(f => f.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.06));
 }
 
+/* ─── STOP / RELEASE HELPER ───────────────────────────────────────
+   Always fully disconnects every node a note ever created, whether
+   the note finished loading or was released mid-load. This is the
+   fix for the long-session node leak: previously, releasing a note
+   before its sample finished fetching left the filter/env/voice-gain
+   nodes permanently connected to the audio graph (silent but still
+   processed every render quantum) because stopNote() bailed out
+   early when envGain wasn't set yet. Over a session those orphaned
+   nodes accumulate, overloading the audio thread (crackling) and
+   eventually starving new notes of CPU time (silent keystrokes).
+   ─────────────────────────────────────────────────────────────── */
+function releaseNote(key, fadeMs) {
+  const note = activeOscs[key] || pendingRelease[key]?.note;
+  if (!note) return;
+  delete activeOscs[key];
+  note.released = true;            // tells in-flight sample loads to bail and clean up
+
+  if (filterNodes[key] === note.filt) delete filterNodes[key];
+
+  const t = audioCtx ? audioCtx.currentTime : 0;
+  if (note.envGain) {
+    note.envGain.gain.cancelScheduledValues(t);
+    note.envGain.gain.setValueAtTime(note.envGain.gain.value, t);
+    note.envGain.gain.exponentialRampToValueAtTime(0.0001, t + (fadeMs / 1000));
+  }
+  note.nodes.forEach(n => { if (n.stop) { try { n.stop(t + fadeMs / 1000 + 0.02); } catch(_){} } });
+
+  pendingRelease[key] = { note };
+  setTimeout(() => {
+    note.nodes.forEach(n => { try { n.disconnect(); } catch(_){} });
+    if (pendingRelease[key]?.note === note) delete pendingRelease[key];
+  }, fadeMs + 60);
+}
+
 /* ─── START NOTE ─── */
 function startNote(semitone) {
   if (!audioCtx) return;
   const key = `s${semitone}`;
   if (activeReeds.size === 0) return;
 
-  // Fast retrigger: if the same note is already active (fully or pending),
-  // cut it immediately and restart — never drop the new press silently.
-  if (activeOscs[key]) {
-    const prev = activeOscs[key];
-    delete activeOscs[key];
-    if (prev.envGain) {
-      const t = audioCtx.currentTime;
-      prev.envGain.gain.cancelScheduledValues(t);
-      prev.envGain.gain.setValueAtTime(prev.envGain.gain.value, t);
-      prev.envGain.gain.linearRampToValueAtTime(0.0001, t + 0.02);
-    }
-    if (prev.nodes) setTimeout(() => prev.nodes.forEach(n => { try { n.disconnect(); } catch(_){} }), 30);
-    const fk = filterNodes[key];
-    if (fk) { setTimeout(() => { try { fk.disconnect(); } catch(_){} }, 30); delete filterNodes[key]; }
-  }
-  // Also clear any still-fading tail from a previous release
-  if (pendingRelease[key]) {
-    pendingRelease[key].forEach(n => { try { n.disconnect(); } catch(_){} });
-    delete pendingRelease[key];
-    const fk = filterNodes[key];
-    if (fk) { try { fk.disconnect(); } catch(_){} delete filterNodes[key]; }
-  }
-  activeOscs[key] = { semitone, pending: true };
+  // Fast retrigger: cut any existing note on this key (active or pending)
+  // immediately and cleanly — guarantees no orphaned nodes either way.
+  if (activeOscs[key]) releaseNote(key, 20);
+
+  const note = { semitone, released: false, envGain: null, filt: null, nodes: [] };
+  activeOscs[key] = note;
+
   const el = document.querySelector(`[data-semitone="${semitone}"]`);
   if (el) el.classList.add('pressed');
 
@@ -1235,6 +1266,7 @@ function startNote(semitone) {
   filt.connect(reverbNode);
   filt.connect(masterGain);
   filterNodes[key] = filt;
+  note.filt = filt;
 
   // One env per note (all reed voices share it — attack/release together)
   const env = audioCtx.createGain();
@@ -1242,8 +1274,9 @@ function startNote(semitone) {
   env.gain.linearRampToValueAtTime(0.0001, t0 + 0.012);
   env.gain.exponentialRampToValueAtTime(0.72, t0 + 0.10);
   env.connect(filt);
+  note.envGain = env;
+  note.nodes.push(env, filt);
 
-  const allNodes = [env, filt];
   const loadPromises = [];
 
   // Build a voice for each active reed stop
@@ -1257,9 +1290,16 @@ function startNote(semitone) {
     const voiceGain = audioCtx.createGain();
     voiceGain.gain.value = cfg.vol;
     voiceGain.connect(env);
+    note.nodes.push(voiceGain);
 
     const p = loadSample(rootMidi).then(buffer => {
-      if (!activeOscs[key]) return; // note released while loading
+      // Note was released while the sample was still loading — don't
+      // start any audio, and disconnect this voice's gain immediately
+      // rather than leaving it dangling in the graph.
+      if (note.released) {
+        try { voiceGain.disconnect(); } catch(_){}
+        return;
+      }
       if (!buffer) {
         // Fallback oscillator
         const osc = audioCtx.createOscillator();
@@ -1267,7 +1307,7 @@ function startNote(semitone) {
         osc.frequency.value = 440 * Math.pow(2, (targetMidi - 69) / 12);
         osc.connect(voiceGain);
         osc.start(t0);
-        allNodes.push(osc, voiceGain);
+        note.nodes.push(osc);
       } else {
         const src = audioCtx.createBufferSource();
         src.buffer = buffer;
@@ -1277,47 +1317,29 @@ function startNote(semitone) {
         src.loopEnd   = buffer.duration * 0.92;
         src.connect(voiceGain);
         src.start(t0);
-        allNodes.push(src, voiceGain);
+        note.nodes.push(src);
       }
     });
     loadPromises.push(p);
   }
 
   Promise.all(loadPromises).then(() => {
-    if (!activeOscs[key]) return;
-    activeOscs[key] = { semitone, envGain: env, nodes: allNodes };
-    if (playMode === 'staccato') setTimeout(() => stopNote(semitone), 200);
+    if (playMode === 'staccato' && !note.released) setTimeout(() => stopNote(semitone), 200);
   });
 }
 
 /* ─── STOP NOTE ─── */
-// pendingRelease holds nodes that are fading out — lets us retrigger
-// immediately without waiting for the 220ms disconnect timeout
+// pendingRelease holds notes that are fading out — lets us retrigger
+// immediately without waiting for the disconnect timeout, while
+// guaranteeing every created node is eventually disconnected.
 const pendingRelease = {};
 
 function stopNote(semitone) {
   const key = `s${semitone}`;
   if (!activeOscs[key]) return;
-  const { nodes, envGain, src } = activeOscs[key];
-  delete activeOscs[key];
   const el = document.querySelector(`[data-semitone="${semitone}"]`);
   if (el) el.classList.remove('pressed');
-  if (!envGain) return;
-  const t = audioCtx.currentTime;
-  envGain.gain.cancelScheduledValues(t);
-  envGain.gain.setValueAtTime(envGain.gain.value, t);
-  envGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12); // tighter release tail
-  if (src) src.stop(t + 0.14);
-  // Move nodes to pendingRelease so they finish fading cleanly
-  // but don't block a new note on the same key
-  pendingRelease[key] = nodes;
-  setTimeout(() => {
-    const ns = pendingRelease[key];
-    if (ns) ns.forEach(n => { try { n.disconnect(); } catch(_){} });
-    delete pendingRelease[key];
-    const fk = filterNodes[key];
-    if (fk) { try { fk.disconnect(); } catch(_){} delete filterNodes[key]; }
-  }, 220);
+  releaseNote(key, 120); // 120ms release tail
 }
 
 function stopAllNotes() {
